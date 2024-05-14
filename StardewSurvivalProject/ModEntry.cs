@@ -38,7 +38,7 @@ namespace StardewSurvivalProject
             {
                 if (!preset.Equals("default")) tex = helper.ModContent.Load<Texture2D>(String.Format("assets/{0}/{1}", preset, assetFileName));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Monitor.Log(String.Format("Failed to load texture {0} from preset {1}, fallback to default", assetFileName, preset), LogLevel.Warn);
             }
