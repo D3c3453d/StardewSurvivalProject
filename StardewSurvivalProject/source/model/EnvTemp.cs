@@ -127,7 +127,7 @@ namespace StardewSurvivalProject.source.model
 
             //finally, add some randomness XD
             value += rand.NextDouble() * fluctuationTempScale - 0.5 * fluctuationTempScale;
-
+            
             if (!location.IsOutdoors)
             {
                 if (ModConfig.GetInstance().UseDefaultIndoorTemperatureModifier)
@@ -227,7 +227,7 @@ namespace StardewSurvivalProject.source.model
                     SObject obj = Game1.currentLocation.getObjectAtTile(i, j);
                     if (obj != null && !nearbyObject.ContainsKey(obj.GetHashCode()))
                     {
-                        //LogHelper.Debug($"there is a {obj.name} nearby");
+                        LogHelper.Debug($"there is a {obj.name} nearby");
                         nearbyObject.Add(obj.GetHashCode(), obj);
                     }
                 }
@@ -246,21 +246,28 @@ namespace StardewSurvivalProject.source.model
                     //if this item need to be active
                     if (tempControl.needActive)
                     {
-                        if (!checkIfItemIsActive(o, tempControl.activeType))
-                            continue;                        
+                        if (!checkIfItemIsActive(o, tempControl.activeType)){
+                            LogHelper.Debug($"{o.Key} need to be active continue");
+                            continue;
+                        }
                     }
 
                     //prioritize ambient temp if it exceed device's core temp
-                    if ((tempControl.deviceType.Equals("heating") && tempControl.coreTemp < value) || (tempControl.deviceType.Equals("cooling") && tempControl.coreTemp > value)) continue;
+                    if ((tempControl.deviceType.Equals("heating") && tempControl.coreTemp < value) || 
+                        (tempControl.deviceType.Equals("cooling") && tempControl.coreTemp > value)){ 
+                        LogHelper.Debug($"{tempControl.name} priority contionue");
+                        continue;
+                    }
 
                     //dealing with target temp value here?
                     double distance_sqr = distance_square(o.Value.TileLocation.X, o.Value.TileLocation.Y, playerTileX, playerTileY);
-                    //LogHelper.Debug($"Distance square from player to {o.Key} is {distance_sqr}");
+                    LogHelper.Debug($"Distance square from player to {o.Key} is {distance_sqr}");
 
                     double effRange = tempControl.effectiveRange;
                     if (distance_sqr <= effRange * effRange)
                     {
                         double tempModifierEntry = (tempControl.coreTemp - this.value) * (1 / (1 + distance_sqr));
+                        LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
                         value += tempModifierEntry;
                     }
                 }
