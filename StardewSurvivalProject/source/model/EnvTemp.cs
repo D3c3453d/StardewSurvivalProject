@@ -22,8 +22,7 @@ namespace StardewSurvivalProject.source.model
         public void updateEnvTemp(int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
             
-            double BASE_VALUE = DEFAULT_VALUE;
-            double value = BASE_VALUE;
+            double value = DEFAULT_VALUE;
             double dayNightCycleTempDiffScale = ModConfig.GetInstance().DefaultDayNightCycleTemperatureDiffScale;
             double fluctuationTempScale = ModConfig.GetInstance().DefaultTemperatureFluctuationScale;
             bool fixedTemp = false;
@@ -89,37 +88,30 @@ namespace StardewSurvivalProject.source.model
                 //special treatment for cave
                 if (location.Name.Contains("UndergroundMine") && ModConfig.GetInstance().UseDefaultCaveTemperatureModifier)
                 {
-                    if (currentMineLevel == 77377)
-                    {
+                    switch (currentMineLevel){
+                    case 77377:
                         value = DEFAULT_VALUE;
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 0 && currentMineLevel < 40)
-                    {
-                        value = DEFAULT_VALUE + 0.22 * currentMineLevel;
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 40 && currentMineLevel < 80)
-                    {
-                        value = -0.01 * Math.Pow(currentMineLevel - 60, 2) - 6;
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 80 && currentMineLevel < 121)
-                    {
-                        value = 1.1 * Math.Pow(currentMineLevel - 60, 1.05);
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 121)
-                    {
+                        break;
+                    case >=121:
                         value = DEFAULT_VALUE + 0.045 * currentMineLevel;
-                        fixedTemp = true;
+                        break;
+                    case >= 80:
+                        value = 1.1 * Math.Pow(currentMineLevel - 60, 1.05);
+                        break;
+                    case >=40:
+                        value = 0.03 * Math.Pow(currentMineLevel - 60, 2) - 12;
+                        break;
+                    case >=0:
+                        value = DEFAULT_VALUE + 0.22 * currentMineLevel;
+                        break;
                     }
+                    fixedTemp = true;
                 }
             }
 
             //next, check for time
             //convert time to actual decimal format to run on a time-dependent function
-            double decTime = ((double)(time / 100) + ((double)(time % 100) / 60.0));
+            double decTime = (double)(time / 100) + ((double)(time % 100) / 60.0);
             //LogHelper.Debug(decTime.ToString());
             //curve look good enough on desmos so YOLO
             double timeTempModifier = Math.Sin((decTime - 8.5) / (Math.PI * 1.2)) * dayNightCycleTempDiffScale; //TODO change number 3 to a season and location-dependent multiplier
@@ -187,10 +179,10 @@ namespace StardewSurvivalProject.source.model
                     {
                         double perfectAmbientPower = area * DEFAULT_VALUE;
                         double maxPowerFromDevice = tempControlObj.operationalRange * (tempControlObj.effectiveRange * 2 + 1) * (tempControlObj.effectiveRange * 2 + 1) * tempControlObj.ambientCoefficient;
-                        if (perfectAmbientPower > power)
+                        if (DEFAULT_VALUE > value)
                             power = Math.Min(perfectAmbientPower, power + maxPowerFromDevice);
                         else
-                            power = Math.Max(perfectAmbientPower, power - maxPowerFromDevice);
+                            power = Math.Max(perfectAmbientPower, power - maxPowerFromDevice); //CTPAHHO
                     }
                     else power += (tempControlObj.coreTemp - DEFAULT_VALUE) * (tempControlObj.effectiveRange * 2 + 1) * (tempControlObj.effectiveRange * 2 + 1) * tempControlObj.ambientCoefficient; 
 
