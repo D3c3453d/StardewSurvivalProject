@@ -48,7 +48,7 @@ namespace StardewSurvivalProject.source
             if (player.temp.value <= model.BodyTemp.HypotherminaThreshold) effects.EffectManager.applyEffect(effects.EffectManager.hypothermiaEffectIndex);
             if (player.temp.value >= model.BodyTemp.BurnThreshold) effects.EffectManager.applyEffect(effects.EffectManager.burnEffectIndex);
             if (player.temp.value <= model.BodyTemp.FrostbiteThreshold) effects.EffectManager.applyEffect(effects.EffectManager.frostbiteEffectIndex);
-            if (envTemp.value >= player.temp.MinComfortTemp && envTemp.value <= player.temp.MaxComfortTemp) 
+            if (envTemp.value >= player.temp.MinComfortTemp && envTemp.value <= player.temp.MaxComfortTemp)
                 effects.EffectManager.applyEffect(effects.EffectManager.refreshingEffectIndex);
 
             //the real isPause code xd
@@ -100,15 +100,14 @@ namespace StardewSurvivalProject.source
         public void onEnvUpdate(int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
             if (!ModConfig.GetInstance().UseTemperatureModule) return;
-            envTemp.updateEnvTemp(time, season, weatherIconId, location, currentMineLevel);
-            envTemp.updateLocalEnvTemp((int) player.bindedFarmer.Tile.X, (int) player.bindedFarmer.Tile.Y);
+            envTemp.updateEnvTemp((int)player.bindedFarmer.Tile.X, (int)player.bindedFarmer.Tile.Y, time, season, weatherIconId, location, currentMineLevel);
         }
 
         public void onClockUpdate()
         {
             if (player == null) return;
             player.updateDrain();
-            
+
             if (ModConfig.GetInstance().UseTemperatureModule)
             {
                 player.updateBodyTemp(envTemp);
@@ -177,7 +176,7 @@ namespace StardewSurvivalProject.source
 
             // if coolerModifier is non-default value, do not apply the hungerCoolingModifier further
             player.updateEating(addHunger, coolingModifier == 0 ? hungerCoolingModifier : 0);
-                
+
             displayString = player.getStatStringUI();
         }
 
@@ -229,7 +228,7 @@ namespace StardewSurvivalProject.source
             //conflicted with spacecore's DoneEating event
             player.bindedFarmer.isEating = true;
             //Fixing by setting itemToEat to something that doesnt do anything to player HP and stamina (in this case, daffodil)
-            player.bindedFarmer.itemToEat = new SObject("(O)18", 1); 
+            player.bindedFarmer.itemToEat = new SObject("(O)18", 1);
 
             player.updateDrinking(addThirst);
             displayString = player.getStatStringUI();
@@ -267,7 +266,7 @@ namespace StardewSurvivalProject.source
         {
             if (player == null || !ModConfig.GetInstance().UseOnRunningDrain) return;
 
-            double thirstDrainOnRunning = ModConfig.GetInstance().RunningThirstDrainRate * (270f / player.bindedFarmer.MaxStamina) ;
+            double thirstDrainOnRunning = ModConfig.GetInstance().RunningThirstDrainRate * (270f / player.bindedFarmer.MaxStamina);
             double hungerDrainOnRunning = ModConfig.GetInstance().RunningHungerDrainRate * (270f / player.bindedFarmer.MaxStamina);
             if (player.thirst.value <= thirstDrainOnRunning || player.hunger.value <= hungerDrainOnRunning)
             {
@@ -382,7 +381,7 @@ namespace StardewSurvivalProject.source
         public void updateOnToolUsed(StardewValley.Tool toolHold)
         {
             bool isFever = Game1.player.buffs.IsApplied("neroyuki.rlvalley/fever");
-            int power = (int)((player.bindedFarmer.toolHold + 20f) / 600f) + 1;
+            int power = (int)((player.bindedFarmer.toolHold.Value + 20f) / 600f) + 1;
             //LogHelper.Debug($"Tool Power = {power}");
 
             if (!ModConfig.GetInstance().UseOnToolUseDrain) return;
@@ -443,7 +442,7 @@ namespace StardewSurvivalProject.source
             {
                 hungerDrainOnToolUsed = ModConfig.GetInstance().ShearHungerDrain;
                 thirstDrainOnToolUsed = ModConfig.GetInstance().ShearThirstDrain;
-                staminaDrainOnToolUsed = (4f - player.bindedFarmer.FarmingLevel * 0.1f); 
+                staminaDrainOnToolUsed = (4f - player.bindedFarmer.FarmingLevel * 0.1f);
             }
             else
                 LogHelper.Debug("Unknown tool type");
