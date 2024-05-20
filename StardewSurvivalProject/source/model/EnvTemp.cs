@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.Xna.Framework;
 using StardewSurvivalProject.source.utils;
 using StardewValley;
 using System.Collections.Generic;
@@ -37,7 +36,7 @@ namespace StardewSurvivalProject.source.model
             if (checkType == 1)
             {
                 //check if said big craftable is being used
-                if (o.Value.MinutesUntilReady >= 0 && o.Value.heldObject.Value != null)
+                if (o.Value.MinutesUntilReady > 0 && o.Value.heldObject.Value != null)
                 {
                     //LogHelper.Debug($"there is an active {o.Value.name} nearby (machine)");
                     return true;
@@ -160,9 +159,7 @@ namespace StardewSurvivalProject.source.model
             {
                 for (int j = playerTileY - proximityCheckBound; j <= playerTileY + proximityCheckBound; j++)
                 {
-                    Vector2 tile;
-                    tile.X = i; tile.Y = j;
-                    Game1.currentLocation.Objects.TryGetValue(tile, out SObject obj);
+                    SObject obj = Game1.currentLocation.getObjectAtTile(i, j);
                     if (obj != null && !nearbyObject.ContainsKey(obj.GetHashCode()))
                     {
                         LogHelper.Debug($"there is a {obj.Name} nearby");
@@ -198,7 +195,7 @@ namespace StardewSurvivalProject.source.model
 
                     //dealing with target temp this.value here?
                     double distance_sqr = distance_square(o.Value.TileLocation.X, o.Value.TileLocation.Y, playerTileX, playerTileY);
-                    LogHelper.Debug($"Distance square from player to {o.Key} is {distance_sqr}");
+                    LogHelper.Debug($"Distance square from player to {o.Value.Name} is {distance_sqr}");
 
                     double effRange = tempControl.effectiveRange;
                     if (distance_sqr <= effRange * effRange)
