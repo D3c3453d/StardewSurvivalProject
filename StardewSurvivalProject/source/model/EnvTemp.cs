@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using StardewSurvivalProject.source.utils;
 using StardewValley;
 using System.Collections.Generic;
@@ -9,20 +10,58 @@ namespace StardewSurvivalProject.source.model
 {
     public class EnvTemp
     {
-        private static double DEFAULT_VALUE = ModConfig.GetInstance().EnvironmentBaseTemperature;
         public double value { get; set; }
         private bool fixedTemp;
-        private double dayNightCycleTempDiffScale;
         private double timeTempModifier;
         private double decTime;
+        private double dayNightCycleTempDiffScale;
         private double fluctuationTempScale;
         private Random rand = null;
+        private static double DEFAULT_VALUE = ModConfig.GetInstance().EnvironmentBaseTemperature;
 
         public EnvTemp()
         {
             this.value = DEFAULT_VALUE;
             this.fixedTemp = false;
             this.rand = new Random();
+        }
+
+        private double distance_square(double aX, double aY, double bX, double bY)
+        {
+            return (aX - bX) * (aX - bX) + (aY - bY) * (aY - bY);
+        }
+
+        private bool checkIfItemIsActive(KeyValuePair<int, SObject> o, int checkType = 0)
+        {
+            //check if the object checking is a big craftable craftable
+            if (checkType == 1)
+            {
+                //check if said big craftable is being used
+                if (o.Value.MinutesUntilReady >= 0 && o.Value.heldObject.Value != null)
+                {
+                    //LogHelper.Debug($"there is an active {o.Value.name} nearby (machine)");
+                    return true;
+                }
+                else
+                {
+                    //LogHelper.Debug($"there is an inactive {o.Value.name} nearby (machine)");
+                    return false;
+                }
+            }
+            else
+            {
+                //if not big craftable (assuming furniture), check if said furniture is active
+                if (o.Value.IsOn)
+                {
+                    //LogHelper.Debug($"there is an active {o.Value.name} nearby");
+                    return true;
+                }
+                else
+                {
+                    //LogHelper.Debug($"there is an inactive {o.Value.name} nearby");
+                    return false;
+                }
+            }
         }
 
         private void applySeason(string season)
@@ -112,7 +151,69 @@ namespace StardewSurvivalProject.source.model
             }
         }
 
-        public void updateEnvTemp(int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
+        private void applyHeatSources(int playerTileX, int playerTileY)
+        {
+            int proximityCheckBound = (int)Math.Ceiling(data.TempControlObjectDictionary.maxEffectiveRange);
+            Dictionary<int, SObject> nearbyObject = new Dictionary<int, SObject>();
+
+            for (int i = playerTileX - proximityCheckBound; i <= playerTileX + proximityCheckBound; i++)
+            {
+                for (int j = playerTileY - proximityCheckBound; j <= playerTileY + proximityCheckBound; j++)
+                {
+                    Vector2 tile;
+                    tile.X = i; tile.Y = j;
+                    Game1.currentLocation.Objects.TryGetValue(tile, out SObject obj);
+                    if (obj != null && !nearbyObject.ContainsKey(obj.GetHashCode()))
+                    {
+                        LogHelper.Debug($"there is a {obj.Name} nearby");
+                        nearbyObject.Add(obj.GetHashCode(), obj);
+                    }
+                }
+            }
+
+            double oldVal = this.value;
+
+            foreach (KeyValuePair<int, SObject> o in nearbyObject)
+            {
+                data.TempControlObject tempControl = data.TempControlObjectDictionary.GetTempControlData(o.Value.Name);
+                if (tempControl != null)
+                {
+                    //if this item need to be active
+                    if (tempControl.needActive)
+                    {
+                        if (!checkIfItemIsActive(o, tempControl.activeType))
+                        {
+                            LogHelper.Debug($"{o.Value.Name} need to be active continue");
+                            continue;
+                        }
+                    }
+
+                    //prioritize ambient temp if it exceed device's core temp
+                    if ((tempControl.deviceType.Equals("heating") && tempControl.coreTemp < this.value) ||
+                        (tempControl.deviceType.Equals("cooling") && tempControl.coreTemp > this.value))
+                    {
+                        LogHelper.Debug($"{tempControl.name} priority contionue");
+                        continue;
+                    }
+
+                    //dealing with target temp this.value here?
+                    double distance_sqr = distance_square(o.Value.TileLocation.X, o.Value.TileLocation.Y, playerTileX, playerTileY);
+                    LogHelper.Debug($"Distance square from player to {o.Key} is {distance_sqr}");
+
+                    double effRange = tempControl.effectiveRange;
+                    if (distance_sqr <= effRange * effRange)
+                    {
+                        double tempModifierEntry = (tempControl.coreTemp - this.value) * (1 / (1 + distance_sqr));
+                        LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
+                        this.value += tempModifierEntry;
+                    }
+                }
+
+            }
+            LogHelper.Debug($"Final temperature modifier is {this.value - oldVal}");
+        }
+
+        public void updateEnvTemp(int playerTileX, int playerTileY, int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
             this.dayNightCycleTempDiffScale = ModConfig.GetInstance().DefaultDayNightCycleTemperatureDiffScale;
             this.fluctuationTempScale = ModConfig.GetInstance().DefaultTemperatureFluctuationScale;
@@ -120,6 +221,7 @@ namespace StardewSurvivalProject.source.model
             applySeason(season);
             applyWeather(weatherIconId);
             applyLocation(location, currentMineLevel);
+            applyHeatSources(playerTileX, playerTileY);
 
             // day cycle
             this.decTime = time / 100 + time % 100 / 60.0;
