@@ -314,7 +314,7 @@ namespace StardewSurvivalProject.source
 
         public String getPlayerHungerStat()
         {
-            return $"{player.hunger.value.ToString("#.##")} / {model.Hunger.DEFAULT_VALUE}";
+            return $"{player.hunger.value:0.00} / {model.Hunger.DEFAULT_VALUE}";
         }
 
         public double getPlayerHungerPercentage()
@@ -329,7 +329,7 @@ namespace StardewSurvivalProject.source
 
         public String getPlayerThirstStat()
         {
-            return $"{player.thirst.value.ToString("#.##")} / {model.Thirst.DEFAULT_VALUE}";
+            return $"{player.thirst.value:0.00} / {model.Thirst.DEFAULT_VALUE}";
         }
 
         public double getPlayerThirstPercentage()
@@ -359,16 +359,28 @@ namespace StardewSurvivalProject.source
 
         public string getPlayerBodyTempString()
         {
-            if (ModConfig.GetInstance().TemperatureUnit.Equals("Fahrenheit")) return ((player.temp.value * 9 / 5) + 32).ToString("#.##") + "F";
-            else if (ModConfig.GetInstance().TemperatureUnit.Equals("Kelvin")) return (player.temp.value + 273).ToString("#.##") + "K";
-            return player.temp.value.ToString("#.##") + "C";
+            switch (ModConfig.GetInstance().TemperatureUnit)
+            {
+                case "Fahrenheit":
+                    return $"{(player.temp.value * 9 / 5) + 32:0.00}F";
+                case "Kelvin":
+                    return $"{player.temp.value + 273:0.00}K";
+                default:
+                    return $"{player.temp.value:0.00}C";
+            }
         }
 
         public string getEnvTempString()
         {
-            if (ModConfig.GetInstance().TemperatureUnit.Equals("Fahrenheit")) return ((this.envTemp.value * 9 / 5) + 32).ToString("#.##") + "F";
-            else if (ModConfig.GetInstance().TemperatureUnit.Equals("Kelvin")) return (this.envTemp.value + 273).ToString("#.##") + "K";
-            return this.envTemp.value.ToString("#.##") + "C";
+            switch (ModConfig.GetInstance().TemperatureUnit)
+            {
+                case "Fahrenheit":
+                    return $"{(this.envTemp.value * 9 / 5) + 32:0.00}F";
+                case "Kelvin":
+                    return $"{this.envTemp.value + 273:0.00}K";
+                default:
+                    return $"{this.envTemp.value:0.00}C";
+            }
         }
 
         public int getPlayerMoodIndex()
