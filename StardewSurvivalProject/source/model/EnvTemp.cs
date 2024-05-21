@@ -27,7 +27,7 @@ namespace StardewSurvivalProject.source.model
 
         private double distance_square(double aX, double aY, double bX, double bY)
         {
-            return (aX - bX) * (aX - bX) + (aY - bY) * (aY - bY);
+            return Math.Pow(aX - bX, 2) + Math.Pow(aY - bY, 2);
         }
 
         private bool checkIfItemIsActive(KeyValuePair<int, SObject> o, int checkType = 0)
@@ -191,18 +191,17 @@ namespace StardewSurvivalProject.source.model
                     }
 
                     //dealing with target temp this.value here?
-                    double distance_sqr = distance_square(o.Value.TileLocation.X, o.Value.TileLocation.Y, playerTileX, playerTileY);
+                    double distance_sqr = Math.Max(distance_square(o.Value.TileLocation.X, o.Value.TileLocation.Y, playerTileX, playerTileY), 1);
                     LogHelper.Debug($"Distance square from player to {o.Value.Name} is {distance_sqr}");
 
                     double effRange = tempControl.effectiveRange;
-                    if (distance_sqr <= effRange * effRange)
+                    if (distance_sqr <= Math.Pow(effRange, 2))
                     {
-                        double tempModifierEntry = (tempControl.coreTemp - this.value) * (1 / (1 + distance_sqr));
+                        double tempModifierEntry = (tempControl.coreTemp - this.value) / distance_sqr;
                         LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
                         this.value += tempModifierEntry;
                     }
                 }
-
             }
             LogHelper.Debug($"Final temperature modifier is {this.value - oldVal}");
         }
