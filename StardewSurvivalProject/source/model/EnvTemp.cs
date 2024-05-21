@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using StardewSurvivalProject.source.utils;
 using StardewValley;
@@ -147,7 +147,7 @@ namespace StardewSurvivalProject.source.model
             }
         }
 
-        private void applyHeatSources(int playerTileX, int playerTileY)
+        private void applyTempControl(GameLocation location, int playerTileX, int playerTileY)
         {
             int proximityCheckBound = (int)Math.Ceiling(data.TempControlObjectDictionary.maxEffectiveRange);
             Dictionary<int, SObject> nearbyObject = new Dictionary<int, SObject>();
@@ -156,7 +156,7 @@ namespace StardewSurvivalProject.source.model
             {
                 for (int j = playerTileY - proximityCheckBound; j <= playerTileY + proximityCheckBound; j++)
                 {
-                    SObject obj = Game1.currentLocation.getObjectAtTile(i, j);
+                    SObject obj = location.getObjectAtTile(i, j);
                     if (obj != null && !nearbyObject.ContainsKey(obj.GetHashCode()))
                     {
                         LogHelper.Debug($"there is a {obj.Name} nearby");
@@ -214,7 +214,7 @@ namespace StardewSurvivalProject.source.model
                 applySeason(season);
                 applyWeather(weatherIconId);
                 applyLocation(location, currentMineLevel);
-                applyHeatSources(playerTileX, playerTileY);
+                applyTempControl(location, playerTileX, playerTileY);
             }
             else this.value = DEFAULT_VALUE;
 
