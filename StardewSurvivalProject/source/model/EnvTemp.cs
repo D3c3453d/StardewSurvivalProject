@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using StardewSurvivalProject.source.utils;
 using StardewValley;
@@ -209,6 +209,7 @@ namespace StardewSurvivalProject.source.model
 
         public void updateEnvTemp(int playerTileX, int playerTileY, int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
+            this.fixedTemp = false;
             if (location != null)
             {
                 applySeason(season);
