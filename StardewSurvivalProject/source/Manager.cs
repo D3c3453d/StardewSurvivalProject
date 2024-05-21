@@ -12,7 +12,7 @@ namespace StardewSurvivalProject.source
     {
         private model.Player player;
         private model.EnvTemp envTemp;
-        private String displayString = "";
+        private string displayString = "";
         private Random rand = null;
 
         private string RelativeDataPath => Path.Combine("data", $"{Constants.SaveFolderName}.json");
@@ -312,7 +312,7 @@ namespace StardewSurvivalProject.source
             displayString = player.getStatStringUI();
         }
 
-        public String getPlayerHungerStat()
+        public string getPlayerHungerStat()
         {
             return $"{player.hunger.value:0.00} / {model.Hunger.DEFAULT_VALUE}";
         }
@@ -327,7 +327,7 @@ namespace StardewSurvivalProject.source
             return player.hunger.saturation / 100;
         }
 
-        public String getPlayerThirstStat()
+        public string getPlayerThirstStat()
         {
             return $"{player.thirst.value:0.00} / {model.Thirst.DEFAULT_VALUE}";
         }
@@ -407,46 +407,46 @@ namespace StardewSurvivalProject.source
                 case StardewValley.Tools.Axe:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().AxeHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().AxeThirstDrain;
-                    staminaDrainOnToolUsed = ((2 * power) - player.bindedFarmer.ForagingLevel * 0.1f);
+                    staminaDrainOnToolUsed = (2 * power) - player.bindedFarmer.ForagingLevel * 0.1f;
                     break;
                 case StardewValley.Tools.Hoe:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().HoeHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().HoeThirstDrain;
-                    staminaDrainOnToolUsed = ((2 * power) - player.bindedFarmer.FarmingLevel * 0.1f);
+                    staminaDrainOnToolUsed = (2 * power) - player.bindedFarmer.FarmingLevel * 0.1f;
                     break;
                 case StardewValley.Tools.Pickaxe:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().PickaxeHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().PickaxeThirstDrain;
-                    staminaDrainOnToolUsed = ((2 * power) - player.bindedFarmer.MiningLevel * 0.1f);
+                    staminaDrainOnToolUsed = (2 * power) - player.bindedFarmer.MiningLevel * 0.1f;
                     break;
                 case StardewValley.Tools.MeleeWeapon:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().MeleeWeaponHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().MeleeWeaponThirstDrain;
-                    staminaDrainOnToolUsed = (1f - player.bindedFarmer.CombatLevel * 0.08f);
+                    staminaDrainOnToolUsed = 1f - player.bindedFarmer.CombatLevel * 0.08f;
                     break;
                 case StardewValley.Tools.Slingshot:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().SlingshotHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().SlingshotThirstDrain;
-                    staminaDrainOnToolUsed = (1f - player.bindedFarmer.CombatLevel * 0.08f);
+                    staminaDrainOnToolUsed = 1f - player.bindedFarmer.CombatLevel * 0.08f;
                     break;
                 case StardewValley.Tools.WateringCan:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().WateringCanHungerDrain;
-                    staminaDrainOnToolUsed = ((2 * (power + 1)) - player.bindedFarmer.FarmingLevel * 0.1f);
+                    staminaDrainOnToolUsed = (2 * (power + 1)) - player.bindedFarmer.FarmingLevel * 0.1f;
                     break;
                 case StardewValley.Tools.FishingRod:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().FishingPoleHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().FishingPoleThirstDrain;
-                    staminaDrainOnToolUsed = (8f - player.bindedFarmer.FishingLevel * 0.1f);
+                    staminaDrainOnToolUsed = 8f - player.bindedFarmer.FishingLevel * 0.1f;
                     break;
                 case StardewValley.Tools.MilkPail:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().MilkPailHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().MilkPailThirstDrain;
-                    staminaDrainOnToolUsed = (4f - player.bindedFarmer.FarmingLevel * 0.1f);
+                    staminaDrainOnToolUsed = 4f - player.bindedFarmer.FarmingLevel * 0.1f;
                     break;
                 case StardewValley.Tools.Shears:
                     hungerDrainOnToolUsed = ModConfig.GetInstance().ShearHungerDrain;
                     thirstDrainOnToolUsed = ModConfig.GetInstance().ShearThirstDrain;
-                    staminaDrainOnToolUsed = (4f - player.bindedFarmer.FarmingLevel * 0.1f);
+                    staminaDrainOnToolUsed = 4f - player.bindedFarmer.FarmingLevel * 0.1f;
                     break;
                 default:
                     LogHelper.Debug("Unknown tool type");

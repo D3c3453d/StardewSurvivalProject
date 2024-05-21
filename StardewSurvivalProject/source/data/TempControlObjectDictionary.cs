@@ -20,7 +20,7 @@ namespace StardewSurvivalProject.source.data
         public int activeType { get; set; } = 0;
         //ambient temp manipulation
         public double ambientCoefficient { get; set; } = 1;
-        
+
         public string deviceType { get; set; } = "general";
         //operational range, only valid with general devices
         public double operationalRange { get; set; } = 0;
@@ -32,8 +32,8 @@ namespace StardewSurvivalProject.source.data
 
         public static void loadList(Mod context)
         {
-            String RelativePath = Path.Combine(context.Helper.DirectoryPath, "tempControlObjectData.json");
-            String jsonData = File.ReadAllText(RelativePath);
+            string RelativePath = Path.Combine(context.Helper.DirectoryPath, "tempControlObjectData.json");
+            string jsonData = File.ReadAllText(RelativePath);
             TempControlObject[] tempArray = JsonConvert.DeserializeObject<TempControlObject[]>(jsonData);
 
             if (tempArray == null)

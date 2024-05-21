@@ -8,7 +8,7 @@ namespace StardewSurvivalProject.source.data
 {
     public class HydrationItemData
     {
-        public String name { get; set; } = "";
+        public string name { get; set; } = "";
         public double value { get; set; } = 0;
         public double coolingModifier { get; set; } = 1;
     }
@@ -16,13 +16,13 @@ namespace StardewSurvivalProject.source.data
     public class CustomHydrationDictionary
     {
         //load a whitelist of item that can be used to heal player (healing value is separated from edibility)
-        public static Dictionary<String, HydrationItemData> value_list = new Dictionary<string, HydrationItemData>();
-        public static Dictionary<String, HydrationItemData> wildcard_value_list = new Dictionary<string, HydrationItemData>();
+        public static Dictionary<string, HydrationItemData> value_list = new Dictionary<string, HydrationItemData>();
+        public static Dictionary<string, HydrationItemData> wildcard_value_list = new Dictionary<string, HydrationItemData>();
 
         public static void loadList(Mod context)
         {
 
-            String RelativePath = Path.Combine("customHydrationData.json");
+            string RelativePath = Path.Combine("customHydrationData.json");
             HydrationItemData[] tempArray = context.Helper.Data.ReadJsonFile<HydrationItemData[]>(RelativePath);
             if (tempArray == null)
             {
