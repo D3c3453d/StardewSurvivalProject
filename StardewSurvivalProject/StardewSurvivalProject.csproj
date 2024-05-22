@@ -4,7 +4,7 @@
     <AssemblyName>StardewSurvivalProject</AssemblyName>
     <RootNamespace>StardewSurvivalProject</RootNamespace>
     <Version>0.4.0-alpha</Version>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 	<EnableHarmony>true</EnableHarmony>
 	<Authors>NeroYuki</Authors>
 	<Company>None</Company>
