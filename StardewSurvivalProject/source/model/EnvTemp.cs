@@ -174,7 +174,7 @@ namespace StardewSurvivalProject.source.model
                             LogHelper.Debug($"Distance from player to {obj.Name} is {dist}");
                             if (dist <= tempControlObject.effectiveRange)
                             {
-                                double tempModifierEntry = (tempControlObject.coreTemp - this.value) / (dist * dist * dist);
+                                double tempModifierEntry = (tempControlObject.coreTemp - this.value) / (15 * (dist - 1) / tempControlObject.effectiveRange + 1);
                                 LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
                                 this.value += tempModifierEntry;
                             }
@@ -228,7 +228,7 @@ namespace StardewSurvivalProject.source.model
                     }
                     else power += (tempControlObject.coreTemp - DEFAULT_VALUE) * (tempControlObject.effectiveRange * 2 + 1) * (tempControlObject.effectiveRange * 2 + 1) * tempControlObject.ambientCoefficient;
                 }
-                this.value += power / area;
+                this.value += 0.5 * power / area;
             }
         }
 
