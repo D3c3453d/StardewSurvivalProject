@@ -221,7 +221,7 @@ namespace StardewSurvivalProject.source.model
                     {
                         double perfectAmbientPower = area * DEFAULT_VALUE;
                         double maxPowerFromDevice = tempControlObject.operationalRange * (tempControlObject.effectiveRange * 2 + 1) * (tempControlObject.effectiveRange * 2 + 1) * tempControlObject.ambientCoefficient;
-                        if (perfectAmbientPower > power)
+                        if (DEFAULT_VALUE > this.value)
                             power = Math.Min(perfectAmbientPower, power + maxPowerFromDevice);
                         else
                             power = Math.Max(perfectAmbientPower, power - maxPowerFromDevice);
