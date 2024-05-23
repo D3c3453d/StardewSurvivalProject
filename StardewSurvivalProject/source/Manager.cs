@@ -100,7 +100,7 @@ namespace StardewSurvivalProject.source
         public void onEnvUpdate(int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
             if (!ModConfig.GetInstance().UseTemperatureModule) return;
-            envTemp.updateEnvTemp((int)player.bindedFarmer.Tile.X, (int)player.bindedFarmer.Tile.Y, time, season, weatherIconId, location, currentMineLevel);
+            envTemp.updateEnvTemp(player.bindedFarmer.GetBoundingBox().Center.X, player.bindedFarmer.GetBoundingBox().Center.Y, time, season, weatherIconId, location, currentMineLevel);
         }
 
         public void onClockUpdate()

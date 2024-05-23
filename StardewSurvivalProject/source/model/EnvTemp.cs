@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using StardewSurvivalProject.source.utils;
 using StardewValley;
 using System.Collections.Generic;
@@ -24,6 +24,11 @@ namespace StardewSurvivalProject.source.model
             this.rand = new Random();
         }
 
+        private double pixelToTile(int pixel)
+        {
+            return (double)pixel / Game1.tileSize;
+        }
+
         private double distance_square(double aX, double aY, double bX, double bY)
         {
             return Math.Pow(aX - bX, 2) + Math.Pow(aY - bY, 2);
@@ -31,6 +36,7 @@ namespace StardewSurvivalProject.source.model
 
         private bool checkIfItemIsActive(SObject obj, int checkType = 0)
         {
+            LogHelper.Warn($"{obj.Name} X:{pixelToTile(obj.GetBoundingBox().Center.X)} Y:{pixelToTile(obj.GetBoundingBox().Center.Y)}");
             //check if the object is a machine for crafting (eg. Furnace, Charcoal Kiln)
             if (checkType == 1)
             {
@@ -135,18 +141,18 @@ namespace StardewSurvivalProject.source.model
             }
         }
 
-        private void applyTempControlObjects(GameLocation location, int playerTileX, int playerTileY)
+        private void applyTempControlObjects(GameLocation location, double playerTileX, double playerTileY)
         {
             // local temperature emitted by objects
 
             int proximityCheckBound = (int)Math.Ceiling(data.TempControlObjectDictionary.maxEffectiveRange);
             List<SObject> nearbyObjects = new List<SObject>();
             double oldVal = this.value;
-
-            for (int i = playerTileX - proximityCheckBound; i <= playerTileX + proximityCheckBound; i++)
-                for (int j = playerTileY - proximityCheckBound; j <= playerTileY + proximityCheckBound; j++)
+            LogHelper.Warn($"Player X:{playerTileX} Y:{playerTileY}");
+            for (double i = playerTileX - proximityCheckBound; i <= playerTileX + proximityCheckBound; i++)
+                for (double j = playerTileY - proximityCheckBound; j <= playerTileY + proximityCheckBound; j++)
                 {
-                    SObject obj = location.getObjectAtTile(i, j);
+                    SObject obj = location.getObjectAtTile((int)i, (int)j);
 
                     if (obj != null && !nearbyObjects.Contains(obj)) // skip objects, that already calculated
                     {
@@ -164,7 +170,7 @@ namespace StardewSurvivalProject.source.model
                                 continue;
 
                             // dealing with target temp this.value here?
-                            double distance_sqr = Math.Max(distance_square(obj.TileLocation.X, obj.TileLocation.Y, playerTileX, playerTileY), 1);
+                            double distance_sqr = Math.Max(distance_square(pixelToTile(obj.GetBoundingBox().Center.X), pixelToTile(obj.GetBoundingBox().Center.Y), playerTileX, playerTileY), 1);
                             LogHelper.Debug($"Distance square from player to {obj.Name} is {distance_sqr}");
                             if (distance_sqr <= Math.Pow(tempControlObject.effectiveRange, 2))
                             {
@@ -226,7 +232,7 @@ namespace StardewSurvivalProject.source.model
             }
         }
 
-        public void updateEnvTemp(int playerTileX, int playerTileY, int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
+        public void updateEnvTemp(int playerPixelX, int playerPixelY, int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
             this.fixedTemp = false;
             if (location != null)
@@ -234,7 +240,7 @@ namespace StardewSurvivalProject.source.model
                 applySeason(season);
                 applyWeather(weatherIconId);
                 applyLocation(location, currentMineLevel);
-                applyTempControlObjects(location, playerTileX, playerTileY);
+                applyTempControlObjects(location, pixelToTile(playerPixelX), pixelToTile(playerPixelY));
                 applyAmbient(location);
             }
             else
