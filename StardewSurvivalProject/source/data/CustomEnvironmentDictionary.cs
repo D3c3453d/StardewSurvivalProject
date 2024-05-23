@@ -8,7 +8,7 @@ namespace StardewSurvivalProject.source.data
 {
     public class LocationEnvironmentData
     {
-        public String name { get; set; } = "";
+        public string name { get; set; } = "";
         public double tempModifierAdditive { get; set; } = 0;
         public double tempModifierMultiplicative { get; set; } = 1;
         public double tempModifierFixedValue { get; set; } = -274; //ignore value
@@ -23,8 +23,8 @@ namespace StardewSurvivalProject.source.data
 
         public static void loadList(Mod context)
         {
-            String RelativePath = Path.Combine(context.Helper.DirectoryPath, "locationEnvironmentData.json");
-            String jsonData = File.ReadAllText(RelativePath);
+            string RelativePath = Path.Combine(context.Helper.DirectoryPath, "locationEnvironmentData.json");
+            string jsonData = File.ReadAllText(RelativePath);
             LocationEnvironmentData[] tempArray = JsonConvert.DeserializeObject<LocationEnvironmentData[]>(jsonData);
 
             if (tempArray == null)

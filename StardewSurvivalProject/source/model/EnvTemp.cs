@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using StardewSurvivalProject.source.utils;
 using StardewValley;
 using System.Collections.Generic;
@@ -9,303 +8,256 @@ namespace StardewSurvivalProject.source.model
 {
     public class EnvTemp
     {
-        private static double DEFAULT_VALUE = ModConfig.GetInstance().EnvironmentBaseTemperature;
         public double value { get; set; }
+        private bool fixedTemp;
+        private double timeTempModifier;
+        private double decTime;
+        private double dayNightCycleTempDiffScale;
+        private double fluctuationTempScale;
         private Random rand = null;
+        private static double DEFAULT_VALUE = ModConfig.GetInstance().EnvironmentBaseTemperature;
 
         public EnvTemp()
         {
             this.value = DEFAULT_VALUE;
+            this.fixedTemp = false;
             this.rand = new Random();
         }
 
-        public void updateEnvTemp(int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
+        private double pixelToTile(int pixel)
         {
-            
-            double BASE_VALUE = DEFAULT_VALUE;
-            double value = BASE_VALUE;
-            double dayNightCycleTempDiffScale = ModConfig.GetInstance().DefaultDayNightCycleTemperatureDiffScale;
-            double fluctuationTempScale = ModConfig.GetInstance().DefaultTemperatureFluctuationScale;
-            bool fixedTemp = false;
+            return (double)pixel / Game1.tileSize;
+        }
 
-            //LogHelper.Debug($"season={season} time={time} weatherId={weatherIconId}");
+        private double distance(double aX, double aY, double bX, double bY)
+        {
+            return Math.Sqrt((aX - bX) * (aX - bX) + (aY - bY) * (aY - bY));
+        }
 
-            //start with applying adjustment based on season
-            if (season.Equals("spring")) value *= ModConfig.GetInstance().SpringSeasonTemperatureMultiplier;
-            else if (season.Equals("fall")) value *= ModConfig.GetInstance().FallSeasonTemperatureMultiplier ;
-            else if (season.Equals("summer")) value *= ModConfig.GetInstance().SummerSeasonTemperatureMultiplier;
-            else if (season.Equals("winter")) value *= ModConfig.GetInstance().WinterSeasonTemperatureMultiplier;
+        private bool checkIfItemIsActive(SObject obj, int checkType = 0)
+        {
+            LogHelper.Warn($"{obj.Name} X:{pixelToTile(obj.GetBoundingBox().Center.X)} Y:{pixelToTile(obj.GetBoundingBox().Center.Y)}");
+            //check if the object is a machine for crafting (eg. Furnace, Charcoal Kiln)
+            if (checkType == 1)
+            {
+                if (obj.MinutesUntilReady > 0 && obj.heldObject.Value != null) return true;
+                else return false;
+            }
+            else
+            {
+                //if not a machine for crafting (assuming furniture), check if said furniture is active
+                if (obj.IsOn) return true;
+                else return false;
+            }
+        }
 
-            //next, check for weather
+        private void applySeason(string season)
+        {
+            // season temperature modifiers
+
+            switch (season)
+            {
+                case "spring":
+                    this.value *= ModConfig.GetInstance().SpringSeasonTemperatureMultiplier; break;
+                case "summer":
+                    this.value *= ModConfig.GetInstance().SummerSeasonTemperatureMultiplier; break;
+                case "fall":
+                    this.value *= ModConfig.GetInstance().FallSeasonTemperatureMultiplier; break;
+                case "winter":
+                    this.value *= ModConfig.GetInstance().WinterSeasonTemperatureMultiplier; break;
+            }
+
+        }
+
+        private void applyWeather(int weatherIconId)
+        {
+            // weather temperature modifiers
+
             switch (weatherIconId)
             {
                 case (int)weatherIconType.SUNNY:
-                    value *= ModConfig.GetInstance().SunnyWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().SunnyWeatherTemperatureMultiplier; break;
                 case (int)weatherIconType.FESTIVAL:
-                    value *= ModConfig.GetInstance().FestivalWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().FestivalWeatherTemperatureMultiplier; break;
                 case (int)weatherIconType.WEDDING:
-                    value *= ModConfig.GetInstance().WeddingWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().WeddingWeatherTemperatureMultiplier; break;
                 case (int)weatherIconType.STORM:
-                    value *= ModConfig.GetInstance().StormWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().StormWeatherTemperatureMultiplier; break;
                 case (int)weatherIconType.RAIN:
-                    value *= ModConfig.GetInstance().RainWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().RainWeatherTemperatureMultiplier; break;
                 case (int)weatherIconType.WINDY_SPRING:
-                    value *= ModConfig.GetInstance().WindySpringWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().WindySpringWeatherTemperatureMultiplier; break;
                 case (int)weatherIconType.WINDY_FALL:
-                    value *= ModConfig.GetInstance().WindySpringWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().WindySpringWeatherTemperatureMultiplier; break;
                 case (int)weatherIconType.SNOW:
-                    value *= ModConfig.GetInstance().SnowWeatherTemperatureMultiplier; break;
+                    this.value *= ModConfig.GetInstance().SnowWeatherTemperatureMultiplier; break;
                 default: break;
             }
 
-            
-            //check for location
-            if (location != null)
+        }
+
+        private void applyLocation(GameLocation location, int currentMineLevel)
+        {
+            // location temperature modifiers
+
+            data.LocationEnvironmentData locationData = data.CustomEnvironmentDictionary.GetEnvironmentData(location.Name);
+            if (locationData != null)
             {
-                if (ModConfig.GetInstance().UseCustomLocationTemperatureData)
+                this.value += locationData.tempModifierAdditive;
+                this.value *= locationData.tempModifierMultiplicative;
+                if (locationData.tempModifierFixedValue > -273)
                 {
-                    //LogHelper.Debug(location.Name);
-                    data.LocationEnvironmentData locationData = data.CustomEnvironmentDictionary.GetEnvironmentData(location.Name);
-                    if (locationData != null)
-                    {
-                        value += locationData.tempModifierAdditive;
-                        value *= locationData.tempModifierMultiplicative;
-                        if (locationData.tempModifierFixedValue > -273)
-                        {
-                            value = locationData.tempModifierFixedValue;
-                            fixedTemp = true;
-                        }
-                        dayNightCycleTempDiffScale = locationData.tempModifierTimeDependentScale;
-                        fluctuationTempScale = locationData.tempModifierFluctuationScale;
-                    }
+                    this.value = locationData.tempModifierFixedValue;
+                    this.fixedTemp = true;
                 }
-
-                //if (!location.IsOutdoors && ModConfig.GetInstance().UseDefaultIndoorTemperatureModifier)
-                //{
-                //    //cut temperature difference by half if indoor if outside is colder
-                //    value += Math.Min((DEFAULT_VALUE - value) / 2, 0);
-                //}
-
-                //special treatment for cave
-                if (location.Name.Contains("UndergroundMine") && ModConfig.GetInstance().UseDefaultCaveTemperatureModifier)
-                {
-                    if (currentMineLevel == 77377)
-                    {
-                        value = DEFAULT_VALUE;
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 0 && currentMineLevel < 40)
-                    {
-                        value = DEFAULT_VALUE + 0.22 * currentMineLevel;
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 40 && currentMineLevel < 80)
-                    {
-                        value = -0.01 * Math.Pow(currentMineLevel - 60, 2) - 6;
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 80 && currentMineLevel < 121)
-                    {
-                        value = 1.1 * Math.Pow(currentMineLevel - 60, 1.05);
-                        fixedTemp = true;
-                    }
-                    else if (currentMineLevel >= 121)
-                    {
-                        value = DEFAULT_VALUE + 0.045 * currentMineLevel;
-                        fixedTemp = true;
-                    }
-                }
+                this.dayNightCycleTempDiffScale = locationData.tempModifierTimeDependentScale;
+                this.fluctuationTempScale = locationData.tempModifierFluctuationScale;
             }
 
-            //next, check for time
-            //convert time to actual decimal format to run on a time-dependent function
-            double decTime = ((double)(time / 100) + ((double)(time % 100) / 60.0));
-            //LogHelper.Debug(decTime.ToString());
-            //curve look good enough on desmos so YOLO
-            double timeTempModifier = Math.Sin((decTime - 8.5) / (Math.PI * 1.2)) * dayNightCycleTempDiffScale; //TODO change number 3 to a season and location-dependent multiplier
-            value += (fixedTemp) ? 0 : timeTempModifier;
-
-            //finally, add some randomness XD
-            value += rand.NextDouble() * fluctuationTempScale - 0.5 * fluctuationTempScale;
+            if (location.Name.Contains("UndergroundMine"))
+            {
+                switch (currentMineLevel)
+                {
+                    case 77377:
+                        value = DEFAULT_VALUE; break;
+                    case >= 121:
+                        value = DEFAULT_VALUE + 0.045 * currentMineLevel; break;
+                    case >= 80:
+                        value = 1.1 * Math.Pow(currentMineLevel - 60, 1.05); break;
+                    case >= 40:
+                        value = 0.03 * Math.Pow(currentMineLevel - 60, 2) - 12; break;
+                    case >= 0:
+                        value = DEFAULT_VALUE + 0.22 * currentMineLevel; break;
+                }
+                this.fixedTemp = true;
+            }
 
             if (!location.IsOutdoors)
             {
-                if (ModConfig.GetInstance().UseDefaultIndoorTemperatureModifier)
-                    //cut temperature difference by half if indoor if outside is colder (assume wall can block heat)
-                    if(location.IsFarm)
-                        value += (DEFAULT_VALUE - value) * ModConfig.GetInstance().FarmIndoorTemperatureMultiplier;
-                    else
-                        value += (DEFAULT_VALUE - value) * ModConfig.GetInstance().IndoorTemperatureMultiplier;
+                if (location.IsFarm)
+                    this.value += (DEFAULT_VALUE - this.value) * ModConfig.GetInstance().FarmIndoorTemperatureMultiplier;
+                else
+                    this.value += (DEFAULT_VALUE - this.value) * ModConfig.GetInstance().IndoorTemperatureMultiplier;
+            }
+        }
 
-                // aggregate a list of weather control item to calculate indoor temperature
-                List<data.TempControlObject> tempControlDevices = new List<data.TempControlObject>();
+        private void applyTempControlObjects(GameLocation location, double playerTileX, double playerTileY)
+        {
+            // local temperature emitted by objects
 
+            int proximityCheckBound = (int)Math.Ceiling(data.TempControlObjectDictionary.maxEffectiveRange);
+            List<SObject> nearbyObjects = new List<SObject>();
+            double oldVal = this.value;
+            LogHelper.Warn($"Player X:{playerTileX} Y:{playerTileY}");
+            for (double i = playerTileX - proximityCheckBound; i <= playerTileX + proximityCheckBound; i++)
+                for (double j = playerTileY - proximityCheckBound; j <= playerTileY + proximityCheckBound; j++)
+                {
+                    SObject obj = location.getObjectAtTile((int)i, (int)j);
+
+                    if (obj != null && !nearbyObjects.Contains(obj)) // skip objects, that already calculated
+                    {
+                        data.TempControlObject tempControlObject = data.TempControlObjectDictionary.GetTempControlData(obj.Name);
+                        if (tempControlObject != null)
+                        {
+                            nearbyObjects.Add(obj);
+
+                            // skip inactive objects, that need to be activated
+                            if (tempControlObject.needActive && !checkIfItemIsActive(obj, tempControlObject.activeType)) continue;
+
+                            // prioritize ambient temp if it exceed device's core temp
+                            if ((tempControlObject.deviceType.Equals("heating") && tempControlObject.coreTemp < this.value) ||
+                                (tempControlObject.deviceType.Equals("cooling") && tempControlObject.coreTemp > this.value))
+                                continue;
+
+                            // dealing with target temp this.value here?
+                            double dist = Math.Max(distance(pixelToTile(obj.GetBoundingBox().Center.X), pixelToTile(obj.GetBoundingBox().Center.Y), playerTileX, playerTileY), 1);
+                            LogHelper.Debug($"Distance from player to {obj.Name} is {dist}");
+                            if (dist <= tempControlObject.effectiveRange)
+                            {
+                                double tempModifierEntry = (tempControlObject.coreTemp - this.value) / (dist * dist * dist);
+                                LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
+                                this.value += tempModifierEntry;
+                            }
+                        }
+                    }
+                }
+            LogHelper.Debug($"Final temperature modifier is {this.value - oldVal}");
+        }
+
+        private void applyAmbient(GameLocation location)
+        {
+            // ambient by temperature control objects
+
+            if (!location.IsOutdoors)
+            {
+                List<data.TempControlObject> tempControlObjects = new List<data.TempControlObject>();
+
+                // objects
                 foreach (SObject obj in location.objects.Values)
                 {
-                    data.TempControlObject tempControl = data.TempControlObjectDictionary.GetTempControlData(obj.name);
-                    if (tempControl != null)
-                    {
-                        LogHelper.Debug(obj.name);
-                        //if this item need to be active
-                        if (tempControl.needActive)
-                        {
-                            if (checkIfItemIsActive(new KeyValuePair<int, SObject>(obj.GetHashCode(), obj), tempControl.activeType) == false) continue;    
-                        }
-                        tempControlDevices.Add(tempControl);
-
-                    }
+                    data.TempControlObject tempControlObject = data.TempControlObjectDictionary.GetTempControlData(obj.name);
+                    if (tempControlObject != null)
+                        if (!tempControlObject.needActive || checkIfItemIsActive(obj, tempControlObject.activeType)) // skips inactive objects, that need to be activated
+                            tempControlObjects.Add(tempControlObject);
                 }
 
+                // furniture
                 foreach (SObject obj in location.furniture)
                 {
-                    data.TempControlObject tempControl = data.TempControlObjectDictionary.GetTempControlData(obj.name);
-                    if (tempControl != null)
-                    {
-                        LogHelper.Debug(obj.name);
-                        //if this item need to be active
-                        if (tempControl.needActive)
-                        {
-                            if (checkIfItemIsActive(new KeyValuePair<int, SObject>(obj.GetHashCode(), obj), tempControl.activeType) == false) continue;
-                        }
-                        tempControlDevices.Add(tempControl);
-
-                    }
+                    data.TempControlObject tempControlObject = data.TempControlObjectDictionary.GetTempControlData(obj.name);
+                    if (tempControlObject != null)
+                        if (!tempControlObject.needActive || checkIfItemIsActive(obj, tempControlObject.activeType)) // skips inactive objects, that need to be activated
+                            tempControlObjects.Add(tempControlObject);
                 }
 
-                LogHelper.Debug(tempControlDevices.Count.ToString());
+                double area = location.Map.GetLayer("Back").Tiles.Array.Length;
+                double power = 0;
 
-                int area = location.Map.GetLayer("Back").Tiles.Array.Length;
-                LogHelper.Debug("temp = " + value);
-
-                double power = area * value;
-
-                foreach (data.TempControlObject tempControlObj in tempControlDevices)
+                foreach (data.TempControlObject tempControlObject in tempControlObjects)
                 {
-                    LogHelper.Debug(tempControlObj.name);
+                    LogHelper.Debug(tempControlObject.name);
                     //calculate indoor heating power base on core temp and range (assume full effectiveness if object is placed indoor)
-                    if (tempControlObj.deviceType.Equals("general"))
+                    if (tempControlObject.deviceType.Equals("general"))
                     {
                         double perfectAmbientPower = area * DEFAULT_VALUE;
-                        double maxPowerFromDevice = tempControlObj.operationalRange * (tempControlObj.effectiveRange * 2 + 1) * (tempControlObj.effectiveRange * 2 + 1) * tempControlObj.ambientCoefficient;
+                        double maxPowerFromDevice = tempControlObject.operationalRange * (tempControlObject.effectiveRange * 2 + 1) * (tempControlObject.effectiveRange * 2 + 1) * tempControlObject.ambientCoefficient;
                         if (perfectAmbientPower > power)
                             power = Math.Min(perfectAmbientPower, power + maxPowerFromDevice);
                         else
                             power = Math.Max(perfectAmbientPower, power - maxPowerFromDevice);
                     }
-                    else power += (tempControlObj.coreTemp - DEFAULT_VALUE) * (tempControlObj.effectiveRange * 2 + 1) * (tempControlObj.effectiveRange * 2 + 1) * tempControlObj.ambientCoefficient; 
-
-                    
+                    else power += (tempControlObject.coreTemp - DEFAULT_VALUE) * (tempControlObject.effectiveRange * 2 + 1) * (tempControlObject.effectiveRange * 2 + 1) * tempControlObject.ambientCoefficient;
                 }
-
-                // modify indoor temp base on area and the heating / cooling power of all temperature control devices
-
-                value = power / area;
-
-                LogHelper.Debug("final temp = " + value);
+                this.value += power / area;
             }
-
-            this.value = value;
         }
 
-        public void updateLocalEnvTemp(int playerTileX, int playerTileY)
+        public void updateEnvTemp(int playerPixelX, int playerPixelY, int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
-
-            //FIXME: approach can be improved
-            //TODO: change to instead keeping track of a list of heating / cooling source (initialize on loading save file)
-
-            //check in player proximity for any object (AxA tile square around player position
-            //should change based on the biggest effectiveRange entry)
-
-
-            int proximityCheckBound = (int)Math.Ceiling(data.TempControlObjectDictionary.maxEffectiveRange); 
-            Dictionary<int, SObject> nearbyObject = new Dictionary<int, SObject>();
-
-            for (int i = playerTileX - proximityCheckBound; i <= playerTileX + proximityCheckBound; i++)
+            this.fixedTemp = false;
+            if (location != null)
             {
-                for (int j = playerTileY - proximityCheckBound; j <= proximityCheckBound + proximityCheckBound; j++)
-                {
-                    SObject obj = Game1.currentLocation.getObjectAtTile(i, j);
-                    if (obj != null && !nearbyObject.ContainsKey(obj.GetHashCode()))
-                    {
-                        //LogHelper.Debug($"there is a {obj.name} nearby");
-                        nearbyObject.Add(obj.GetHashCode(), obj);
-                    }
-                }
-            }
-            //filter object as heating source and cooling source
-
-            double oldVal = value;
-
-            //LinkedList<double> tempModifier = new LinkedList<double>();
-
-            foreach (KeyValuePair<int, SObject> o in nearbyObject)
-            {
-                data.TempControlObject tempControl = data.TempControlObjectDictionary.GetTempControlData(o.Value.name);
-                if (tempControl != null)
-                {
-                    //if this item need to be active
-                    if (tempControl.needActive)
-                    {
-                        if (!checkIfItemIsActive(o, tempControl.activeType))
-                            continue;                        
-                    }
-
-                    //prioritize ambient temp if it exceed device's core temp
-                    if ((tempControl.deviceType.Equals("heating") && tempControl.coreTemp < value) || (tempControl.deviceType.Equals("cooling") && tempControl.coreTemp > value)) continue;
-
-                    //dealing with target temp value here?
-                    double distance_sqr = distance_square(o.Value.TileLocation.X, o.Value.TileLocation.Y, playerTileX, playerTileY);
-                    //LogHelper.Debug($"Distance square from player to {o.Key} is {distance_sqr}");
-
-                    double effRange = tempControl.effectiveRange;
-                    if (distance_sqr <= effRange * effRange)
-                    {
-                        double tempModifierEntry = (tempControl.coreTemp - this.value) * (1 / (1 + distance_sqr));
-                        value += tempModifierEntry;
-                    }
-                }
-
-            }
-            LogHelper.Debug($"Final temperature modifier is {value - oldVal}");
-
-        }
-
-        private double distance_square(double aX, double aY, double bX, double bY)
-        {
-            return (aX - bX) * (aX - bX) + (aY - bY) * (aY - bY);
-        }
-
-        private bool checkIfItemIsActive(KeyValuePair<int, SObject> o, int checkType = 0)
-        {
-            //check if the object checking is a big craftable craftable
-            if (checkType == 1)
-            {
-                //check if said big craftable is being used
-                if (o.Value.MinutesUntilReady >= 0 && o.Value.heldObject.Value != null)
-                {
-                    //LogHelper.Debug($"there is an active {o.Value.name} nearby (machine)");
-                    return true;
-                }
-                else
-                {
-                    //LogHelper.Debug($"there is an inactive {o.Value.name} nearby (machine)");
-                    return false;
-                }
+                applySeason(season);
+                applyWeather(weatherIconId);
+                applyLocation(location, currentMineLevel);
+                applyTempControlObjects(location, pixelToTile(playerPixelX), pixelToTile(playerPixelY));
+                applyAmbient(location);
             }
             else
             {
-                //if not big craftable (assuming furniture), check if said furniture is active
-                if (o.Value.IsOn)
-                {
-                    //LogHelper.Debug($"there is an active {o.Value.name} nearby");
-                    return true;
-                }
-                else
-                {
-                    //LogHelper.Debug($"there is an inactive {o.Value.name} nearby");
-                    return false;
-                }
+                this.value = DEFAULT_VALUE;
+                this.fixedTemp = true;
             }
+
+            // day cycle
+            this.dayNightCycleTempDiffScale = ModConfig.GetInstance().DefaultDayNightCycleTemperatureDiffScale;
+            this.decTime = time / 100 + time % 100 / 60.0;
+            this.timeTempModifier = Math.Sin((this.decTime - 8.5) / (Math.PI * 1.2)) * this.dayNightCycleTempDiffScale;
+            this.value += fixedTemp ? 0 : this.timeTempModifier;
+
+            // fluctuation
+            this.fluctuationTempScale = ModConfig.GetInstance().DefaultTemperatureFluctuationScale;
+            this.value += rand.NextDouble() * this.fluctuationTempScale - 0.5 * this.fluctuationTempScale;
         }
     }
 }

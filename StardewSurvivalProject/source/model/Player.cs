@@ -55,7 +55,7 @@ namespace StardewSurvivalProject.source.model
             {
                 thirst.value = 0;
                 int healthPenalty = ModConfig.GetInstance().HealthPenaltyOnDehydration;
-                bindedFarmer.health -= healthPenalty; 
+                bindedFarmer.health -= healthPenalty;
                 Game1.currentLocation.playSound("ow");
                 Game1.hitShakeTimer = 100 * healthPenalty;
             }
@@ -87,7 +87,7 @@ namespace StardewSurvivalProject.source.model
 
             hunger.value = Math.Min(hunger.value + addValue, Hunger.DEFAULT_VALUE);
             if (addValue == 0) return;
-            Game1.addHUDMessage(new HUDMessage($"{(addValue >= 0 ? "+" : "") + Math.Round(addValue)} Hunger", (addValue >= 0 ? HUDMessage.stamina_type : HUDMessage.error_type)));
+            Game1.addHUDMessage(new HUDMessage($"{(addValue >= 0 ? "+" : "") + Math.Round(addValue)} Hunger", addValue >= 0 ? HUDMessage.stamina_type : HUDMessage.error_type));
 
             if (addValue > 0 && coolingModifier != 0)
             {
@@ -100,13 +100,13 @@ namespace StardewSurvivalProject.source.model
         {
             thirst.value = Math.Min(thirst.value + addValue, Thirst.DEFAULT_VALUE);
             if (addValue == 0) return;
-            Game1.addHUDMessage(new HUDMessage($"{(addValue >= 0 ? "+" : "") + addValue} Hydration", (addValue >= 0 ? HUDMessage.stamina_type : HUDMessage.error_type)));
+            Game1.addHUDMessage(new HUDMessage($"{(addValue >= 0 ? "+" : "") + addValue} Hydration", addValue >= 0 ? HUDMessage.stamina_type : HUDMessage.error_type));
 
             if (addValue > 0)
             {
                 updateBodyTempOnConsumingItem(cooling_modifier, addValue);
             }
-            
+
             checkIsDangerValue();
         }
 
@@ -116,12 +116,12 @@ namespace StardewSurvivalProject.source.model
             if (this.temp.value >= BodyTemp.DEFAULT_VALUE && coolingModifier > 0)
             {
                 //cooling down player if water was drank
-                this.temp.value -= (this.temp.value - (BodyTemp.DEFAULT_VALUE)) * (1 - 1 / (0.01 * coolingModifier * (shouldScaleValue ? scaleValue : 10) + 1));
+                this.temp.value -= (this.temp.value - BodyTemp.DEFAULT_VALUE) * (1 - 1 / (0.01 * coolingModifier * (shouldScaleValue ? scaleValue : 10) + 1));
             }
             else if (this.temp.value < BodyTemp.DEFAULT_VALUE && coolingModifier <= 0)
             {
                 //heating up player if hot drink was drank
-                this.temp.value += ((BodyTemp.DEFAULT_VALUE) - this.temp.value) * (1 - 1 / (0.02 * (-coolingModifier) * (shouldScaleValue ? scaleValue : 10) + 1));
+                this.temp.value += (BodyTemp.DEFAULT_VALUE - this.temp.value) * (1 - 1 / (0.02 * (-coolingModifier) * (shouldScaleValue ? scaleValue : 10) + 1));
             }
             // overheat/overchill player
             if (Math.Abs(coolingModifier) > 4)
@@ -133,7 +133,7 @@ namespace StardewSurvivalProject.source.model
 
         public void updateBodyTemp(EnvTemp envTemp)
         {
-            String hat_name = "", shirt_name = "", pants_name = "", boots_name = "";
+            string hat_name = "", shirt_name = "", pants_name = "", boots_name = "";
             if (bindedFarmer.hat.Value != null) hat_name = bindedFarmer.hat.Value.Name;
             if (bindedFarmer.shirtItem.Value != null) shirt_name = bindedFarmer.shirtItem.Value.Name;
             if (bindedFarmer.pantsItem.Value != null) pants_name = bindedFarmer.pantsItem.Value.Name;
@@ -144,14 +144,14 @@ namespace StardewSurvivalProject.source.model
             temp.BodyTempCalc(envTemp, (rand.NextDouble() * 0.2) - 0.1);
         }
 
-        public String getStatString()
+        public string getStatString()
         {
-            return $"Hunger = {hunger.value.ToString("#.##")}; Thirst = {thirst.value.ToString("#.##")}; Body Temp. = {temp.value.ToString("#.##")}";
+            return $"Hunger = {hunger.value:0.00}; Thirst = {thirst.value:0.00}; Body Temp. = {temp.value:0.00}";
         }
 
-        public String getStatStringUI()
+        public string getStatStringUI()
         {
-            return $"Hunger: {hunger.value.ToString("#.##")}\nThirst: {thirst.value.ToString("#.##")}\nBody Temp.: {temp.value.ToString("#.##")}";
+            return $"Hunger: {hunger.value:0.00}\nThirst: {thirst.value:0.00}\nBody Temp.: {temp.value:0.00}";
         }
 
         internal void updateRunningDrain()
@@ -168,7 +168,7 @@ namespace StardewSurvivalProject.source.model
                 hunger.value = Hunger.DEFAULT_VALUE / 4;
             if (ModConfig.GetInstance().ThirstEffectPercentageThreshold > 0)
                 thirst.value = Thirst.DEFAULT_VALUE * ModConfig.GetInstance().ThirstEffectPercentageThreshold / 100;
-            else 
+            else
                 thirst.value = Thirst.DEFAULT_VALUE / 4;
         }
     }

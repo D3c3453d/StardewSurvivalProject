@@ -33,14 +33,14 @@ namespace StardewSurvivalProject
 
         public Texture2D GetAssetWithPreset(IModHelper helper, string assetFileName, string preset)
         {
-            Texture2D tex = helper.ModContent.Load<Texture2D>(String.Format("assets/{0}", assetFileName));
+            Texture2D tex = helper.ModContent.Load<Texture2D>(string.Format("assets/{0}", assetFileName));
             try
             {
-                if (!preset.Equals("default")) tex = helper.ModContent.Load<Texture2D>(String.Format("assets/{0}/{1}", preset, assetFileName));
+                if (!preset.Equals("default")) tex = helper.ModContent.Load<Texture2D>(string.Format("assets/{0}/{1}", preset, assetFileName));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Monitor.Log(String.Format("Failed to load texture {0} from preset {1}, fallback to default", assetFileName, preset), LogLevel.Warn);
+                Monitor.Log(string.Format("Failed to load texture {0} from preset {1}, fallback to default", assetFileName, preset), LogLevel.Warn);
             }
             return tex;
         }
@@ -58,7 +58,7 @@ namespace StardewSurvivalProject
             }
             catch (Exception ex)
             {
-                Monitor.Log($"Encountered an error while loading the config.json file. Default settings will be used instead. Full error message:\n-----\n{ex.ToString()}", LogLevel.Error);
+                Monitor.Log($"Encountered an error while loading the config.json file. Default settings will be used instead. Full error message:\n-----\n{ex}", LogLevel.Error);
             }
             //Initialize Global Log
             source.LogHelper.Monitor = this.Monitor;
@@ -131,7 +131,7 @@ namespace StardewSurvivalProject
                 else if (helper.ModRegistry.Get("Maraluna.OvergrownFloweryInterface") != null) preset = "overgrown";
                 else if (helper.ModRegistry.Get("DaisyNiko.EarthyRecolour") != null) preset = "earthy";
                 else preset = "default";
-            } 
+            }
 
             this.HungerBar = GetAssetWithPreset(helper, "HungerBar.png", preset);
             this.ThirstBar = GetAssetWithPreset(helper, "ThirstBar.png", preset);
@@ -140,7 +140,7 @@ namespace StardewSurvivalProject
             this.TempIndicator = GetAssetWithPreset(helper, "TempIndicator.png", preset);
             this.fillRect = GetAssetWithPreset(helper, "fillRect.png", preset);
             this.TempRangeIndicator = GetAssetWithPreset(helper, "TempRangeIndicator.png", preset);
-            this.MoodIcons = new List<Texture2D> { 
+            this.MoodIcons = new List<Texture2D> {
                 GetAssetWithPreset(helper, "MoodMentalBreak.png", preset),
                 GetAssetWithPreset(helper, "MoodDistress.png", preset),
                 GetAssetWithPreset(helper, "MoodSad.png", preset),
@@ -262,13 +262,13 @@ namespace StardewSurvivalProject
                 this.Monitor.Log("Buff Icon has been loaded, number of row " + buffIconAppendRow, LogLevel.Debug);
 
             }
-        } 
+        }
 
         //handle events
         private void OnDayEnding(object sender, DayEndingEventArgs e)
         {
             if (!Context.IsWorldReady) return;
-            
+
             instance.onDayEnding();
         }
 
@@ -302,7 +302,7 @@ namespace StardewSurvivalProject
             if (Game1.player.CurrentItem != null)
             {
                 if (!(Game1.player.CurrentTool is StardewValley.Tools.WateringCan)
-                    && !(Game1.player.CurrentItem.Name.Equals("Canteen"))) return;
+                    && !Game1.player.CurrentItem.Name.Equals("Canteen")) return;
             }
 
             //if player is eating or drinking, don't do anything
@@ -315,7 +315,7 @@ namespace StardewSurvivalProject
             bool isWater = Game1.currentLocation.isWaterTile((int)e.Cursor.GrabTile.X, (int)e.Cursor.GrabTile.Y);
 
             //check if the player will drink sea water by checking their location or are they able to catch ocean crab pot
-            bool isOcean = (Game1.currentLocation is StardewValley.Locations.Beach) || Game1.currentLocation.catchOceanCrabPotFishFromThisSpot((int) (e.Cursor.GrabTile.X), (int) (e.Cursor.GrabTile.Y));
+            bool isOcean = (Game1.currentLocation is StardewValley.Locations.Beach) || Game1.currentLocation.catchOceanCrabPotFishFromThisSpot((int)e.Cursor.GrabTile.X, (int)e.Cursor.GrabTile.Y);
             //this.Monitor.Log($"ocean = {isOcean}; water = {isWater}", LogLevel.Debug);
 
             //drink on watering can, make sense right?
@@ -338,7 +338,7 @@ namespace StardewSurvivalProject
                 {
                     this.Monitor.Log("cant drink from watering can");
                     Game1.addHUDMessage(new HUDMessage("There is not enough water in your Watering Can", HUDMessage.error_type));
-                }   
+                }
             }
             else if (Game1.player.CurrentItem != null && Game1.player.CurrentItem.Name.Equals("Canteen") && isWater && !isOcean)
             {
@@ -404,28 +404,28 @@ namespace StardewSurvivalProject
             double ENV_TEMP_BOUND_LOW = ModConfig.GetInstance().EnvironmentTemperatureDisplayLowerBound;
             double ENV_TEMP_BOUND_HIGH = ModConfig.GetInstance().EnvironmentTemperatureDisplayHigherBound;
 
-            double x_coord_env_temp = ((instance.getEnvTemp() - ENV_TEMP_BOUND_LOW) / (ENV_TEMP_BOUND_HIGH - ENV_TEMP_BOUND_LOW)) * (50 * Scale);
-            Vector2 env_ind_pos = new Vector2(OffsetX + (float) x_coord_env_temp, OffsetY + this.HungerBar.Height * Scale * 2);
+            double x_coord_env_temp = (instance.getEnvTemp() - ENV_TEMP_BOUND_LOW) / (ENV_TEMP_BOUND_HIGH - ENV_TEMP_BOUND_LOW) * (50 * Scale);
+            Vector2 env_ind_pos = new Vector2(OffsetX + (float)x_coord_env_temp, OffsetY + this.HungerBar.Height * Scale * 2);
 
-            double x_coord_min_comf_temp = ((instance.getMinComfyEnvTemp() - ENV_TEMP_BOUND_LOW) / (ENV_TEMP_BOUND_HIGH - ENV_TEMP_BOUND_LOW)) * (50 * Scale);
+            double x_coord_min_comf_temp = (instance.getMinComfyEnvTemp() - ENV_TEMP_BOUND_LOW) / (ENV_TEMP_BOUND_HIGH - ENV_TEMP_BOUND_LOW) * (50 * Scale);
             Vector2 min_env_ind_pos = new Vector2(OffsetX + (float)x_coord_min_comf_temp, OffsetY + (this.HungerBar.Height + 5) * Scale * 2);
 
-            double x_coord_max_comf_temp = ((instance.getMaxComfyEnvTemp() - ENV_TEMP_BOUND_LOW) / (ENV_TEMP_BOUND_HIGH - ENV_TEMP_BOUND_LOW)) * (50 * Scale);
+            double x_coord_max_comf_temp = (instance.getMaxComfyEnvTemp() - ENV_TEMP_BOUND_LOW) / (ENV_TEMP_BOUND_HIGH - ENV_TEMP_BOUND_LOW) * (50 * Scale);
             Vector2 max_env_ind_pos = new Vector2(OffsetX + (float)x_coord_max_comf_temp, OffsetY + (this.HungerBar.Height - 5) * Scale * 2);
 
             if (overlayComfyTemp)
             {
-                b.Draw(this.fillRect, env_temp_pos + new Vector2(min_env_ind_pos.X, 5 * Scale), new Rectangle(0, 0, (int)(Math.Max(max_env_ind_pos.X - min_env_ind_pos.X, 0)), (int)(6 * Scale)), new Color(Color.Green, 0.3f));
-            }            
-            
-            
+                b.Draw(this.fillRect, env_temp_pos + new Vector2(min_env_ind_pos.X, 5 * Scale), new Rectangle(0, 0, (int)Math.Max(max_env_ind_pos.X - min_env_ind_pos.X, 0), (int)(6 * Scale)), new Color(Color.Green, 0.3f));
+            }
+
+
             b.Draw(this.TempIndicator, env_ind_pos, new Rectangle(0, 0, this.TempIndicator.Width, this.TempIndicator.Height), Color.White, 0, new Vector2(), Scale, SpriteEffects.None, 1);
 
             double BODY_TEMP_BOUND_LOW = ModConfig.GetInstance().BodyTemperatureDisplayLowerBound;
             double BODY_TEMP_BOUND_HIGH = ModConfig.GetInstance().BodyTemperatureDisplayHigherBound;
 
-            double x_coord_body_temp = ((instance.getPlayerBodyTemp() - BODY_TEMP_BOUND_LOW) / (BODY_TEMP_BOUND_HIGH - BODY_TEMP_BOUND_LOW)) * (50 * Scale);
-            Vector2 body_ind_pos = new Vector2(OffsetX + (float) x_coord_body_temp, OffsetY + this.HungerBar.Height * Scale * 3);
+            double x_coord_body_temp = (instance.getPlayerBodyTemp() - BODY_TEMP_BOUND_LOW) / (BODY_TEMP_BOUND_HIGH - BODY_TEMP_BOUND_LOW) * (50 * Scale);
+            Vector2 body_ind_pos = new Vector2(OffsetX + (float)x_coord_body_temp, OffsetY + this.HungerBar.Height * Scale * 3);
             b.Draw(this.TempIndicator, body_ind_pos, new Rectangle(0, 0, this.TempIndicator.Width, this.TempIndicator.Height), Color.White, 0, new Vector2(), Scale, SpriteEffects.None, 1);
 
             //draw hunger and thirst indicator
@@ -447,10 +447,10 @@ namespace StardewSurvivalProject
                 b.Draw(this.fillRect, hunger_pos + new Vector2(4 * Scale, 9 * Scale), new Rectangle(0, 0, (int)(perc * 50 * Scale), (int)(2 * Scale)), new Color(Color.Yellow, 0.3f));
             }
 
-            Rectangle hunger_hover_area = new Rectangle((int) hunger_pos.X, (int) hunger_pos.Y, (int) (this.HungerBar.Width * Scale), (int) (this.HungerBar.Height * Scale));
-            Rectangle thirst_hover_area = new Rectangle((int) thirst_pos.X, (int) thirst_pos.Y, (int) (this.ThirstBar.Width * Scale), (int) (this.ThirstBar.Height * Scale));
-            Rectangle env_temp_hover_area = new Rectangle((int) env_temp_pos.X, (int) env_temp_pos.Y, (int) (this.EnvTempBar.Width * Scale), (int) (this.EnvTempBar.Height * Scale));
-            Rectangle body_temp_hover_area = new Rectangle((int) body_temp_pos.X, (int) body_temp_pos.Y, (int) (this.BodyTempBar.Width * Scale), (int) (this.BodyTempBar.Height * Scale));
+            Rectangle hunger_hover_area = new Rectangle((int)hunger_pos.X, (int)hunger_pos.Y, (int)(this.HungerBar.Width * Scale), (int)(this.HungerBar.Height * Scale));
+            Rectangle thirst_hover_area = new Rectangle((int)thirst_pos.X, (int)thirst_pos.Y, (int)(this.ThirstBar.Width * Scale), (int)(this.ThirstBar.Height * Scale));
+            Rectangle env_temp_hover_area = new Rectangle((int)env_temp_pos.X, (int)env_temp_pos.Y, (int)(this.EnvTempBar.Width * Scale), (int)(this.EnvTempBar.Height * Scale));
+            Rectangle body_temp_hover_area = new Rectangle((int)body_temp_pos.X, (int)body_temp_pos.Y, (int)(this.BodyTempBar.Width * Scale), (int)(this.BodyTempBar.Height * Scale));
 
             //show number stat on bar hover
 
@@ -488,7 +488,7 @@ namespace StardewSurvivalProject
                 //    this.Monitor.Log($"name={l.name}, isOutdoor={l.isOutdoors}");
                 //}
                 //int mine_level = Game1.CurrentMineLevel; 
-                
+
                 instance.onEnvUpdate(e.NewTime, Game1.currentSeason, Game1.weatherIcon, Game1.currentLocation, Game1.CurrentMineLevel);
                 instance.onClockUpdate();
             }

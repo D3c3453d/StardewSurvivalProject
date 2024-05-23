@@ -12,7 +12,7 @@ namespace StardewSurvivalProject.source
     {
         private model.Player player;
         private model.EnvTemp envTemp;
-        private String displayString = "";
+        private string displayString = "";
         private Random rand = null;
 
         private string RelativeDataPath => Path.Combine("data", $"{Constants.SaveFolderName}.json");
@@ -48,7 +48,7 @@ namespace StardewSurvivalProject.source
             if (player.temp.value <= model.BodyTemp.HypotherminaThreshold) effects.EffectManager.applyEffect(effects.EffectManager.hypothermiaEffectIndex);
             if (player.temp.value >= model.BodyTemp.BurnThreshold) effects.EffectManager.applyEffect(effects.EffectManager.burnEffectIndex);
             if (player.temp.value <= model.BodyTemp.FrostbiteThreshold) effects.EffectManager.applyEffect(effects.EffectManager.frostbiteEffectIndex);
-            if (envTemp.value >= player.temp.MinComfortTemp && envTemp.value <= player.temp.MaxComfortTemp) 
+            if (envTemp.value >= player.temp.MinComfortTemp && envTemp.value <= player.temp.MaxComfortTemp)
                 effects.EffectManager.applyEffect(effects.EffectManager.refreshingEffectIndex);
 
             //the real isPause code xd
@@ -100,15 +100,14 @@ namespace StardewSurvivalProject.source
         public void onEnvUpdate(int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
             if (!ModConfig.GetInstance().UseTemperatureModule) return;
-            envTemp.updateEnvTemp(time, season, weatherIconId, location, currentMineLevel);
-            envTemp.updateLocalEnvTemp((int) player.bindedFarmer.Tile.X, (int) player.bindedFarmer.Tile.Y);
+            envTemp.updateEnvTemp(player.bindedFarmer.GetBoundingBox().Center.X, player.bindedFarmer.GetBoundingBox().Center.Y, time, season, weatherIconId, location, currentMineLevel);
         }
 
         public void onClockUpdate()
         {
             if (player == null) return;
             player.updateDrain();
-            
+
             if (ModConfig.GetInstance().UseTemperatureModule)
             {
                 player.updateBodyTemp(envTemp);
@@ -177,7 +176,7 @@ namespace StardewSurvivalProject.source
 
             // if coolerModifier is non-default value, do not apply the hungerCoolingModifier further
             player.updateEating(addHunger, coolingModifier == 0 ? hungerCoolingModifier : 0);
-                
+
             displayString = player.getStatStringUI();
         }
 
@@ -229,7 +228,7 @@ namespace StardewSurvivalProject.source
             //conflicted with spacecore's DoneEating event
             player.bindedFarmer.isEating = true;
             //Fixing by setting itemToEat to something that doesnt do anything to player HP and stamina (in this case, daffodil)
-            player.bindedFarmer.itemToEat = new SObject("(O)18", 1); 
+            player.bindedFarmer.itemToEat = new SObject("(O)18", 1);
 
             player.updateDrinking(addThirst);
             displayString = player.getStatStringUI();
@@ -267,7 +266,7 @@ namespace StardewSurvivalProject.source
         {
             if (player == null || !ModConfig.GetInstance().UseOnRunningDrain) return;
 
-            double thirstDrainOnRunning = ModConfig.GetInstance().RunningThirstDrainRate * (270f / player.bindedFarmer.MaxStamina) ;
+            double thirstDrainOnRunning = ModConfig.GetInstance().RunningThirstDrainRate * (270f / player.bindedFarmer.MaxStamina);
             double hungerDrainOnRunning = ModConfig.GetInstance().RunningHungerDrainRate * (270f / player.bindedFarmer.MaxStamina);
             if (player.thirst.value <= thirstDrainOnRunning || player.hunger.value <= hungerDrainOnRunning)
             {
@@ -313,9 +312,9 @@ namespace StardewSurvivalProject.source
             displayString = player.getStatStringUI();
         }
 
-        public String getPlayerHungerStat()
+        public string getPlayerHungerStat()
         {
-            return $"{player.hunger.value.ToString("#.##")} / {model.Hunger.DEFAULT_VALUE}";
+            return $"{player.hunger.value:0.00} / {model.Hunger.DEFAULT_VALUE}";
         }
 
         public double getPlayerHungerPercentage()
@@ -328,9 +327,9 @@ namespace StardewSurvivalProject.source
             return player.hunger.saturation / 100;
         }
 
-        public String getPlayerThirstStat()
+        public string getPlayerThirstStat()
         {
-            return $"{player.thirst.value.ToString("#.##")} / {model.Thirst.DEFAULT_VALUE}";
+            return $"{player.thirst.value:0.00} / {model.Thirst.DEFAULT_VALUE}";
         }
 
         public double getPlayerThirstPercentage()
@@ -360,16 +359,28 @@ namespace StardewSurvivalProject.source
 
         public string getPlayerBodyTempString()
         {
-            if (ModConfig.GetInstance().TemperatureUnit.Equals("Fahrenheit")) return ((player.temp.value * 9 / 5) + 32).ToString("#.##") + "F";
-            else if (ModConfig.GetInstance().TemperatureUnit.Equals("Kelvin")) return (player.temp.value + 273).ToString("#.##") + "K";
-            return player.temp.value.ToString("#.##") + "C";
+            switch (ModConfig.GetInstance().TemperatureUnit)
+            {
+                case "Fahrenheit":
+                    return $"{(player.temp.value * 9 / 5) + 32:0.00}F";
+                case "Kelvin":
+                    return $"{player.temp.value + 273:0.00}K";
+                default:
+                    return $"{player.temp.value:0.00}C";
+            }
         }
 
         public string getEnvTempString()
         {
-            if (ModConfig.GetInstance().TemperatureUnit.Equals("Fahrenheit")) return ((this.envTemp.value * 9 / 5) + 32).ToString("#.##") + "F";
-            else if (ModConfig.GetInstance().TemperatureUnit.Equals("Kelvin")) return (this.envTemp.value + 273).ToString("#.##") + "K";
-            return this.envTemp.value.ToString("#.##") + "C";
+            switch (ModConfig.GetInstance().TemperatureUnit)
+            {
+                case "Fahrenheit":
+                    return $"{(this.envTemp.value * 9 / 5) + 32:0.00}F";
+                case "Kelvin":
+                    return $"{this.envTemp.value + 273:0.00}K";
+                default:
+                    return $"{this.envTemp.value:0.00}C";
+            }
         }
 
         public int getPlayerMoodIndex()
@@ -382,7 +393,7 @@ namespace StardewSurvivalProject.source
         public void updateOnToolUsed(StardewValley.Tool toolHold)
         {
             bool isFever = Game1.player.buffs.IsApplied("neroyuki.rlvalley/fever");
-            int power = (int)((player.bindedFarmer.toolHold + 20f) / 600f) + 1;
+            int power = (int)((player.bindedFarmer.toolHold.Value + 20f) / 600f) + 1;
             //LogHelper.Debug($"Tool Power = {power}");
 
             if (!ModConfig.GetInstance().UseOnToolUseDrain) return;
@@ -391,62 +402,56 @@ namespace StardewSurvivalProject.source
             double thirstDrainOnToolUsed = 0;
             float staminaDrainOnToolUsed = 0;
 
-            //yea this is terrible
-            if (toolHold is StardewValley.Tools.Axe)
+            switch (toolHold)
             {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().AxeHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().AxeThirstDrain;
-                staminaDrainOnToolUsed = ((2 * power) - player.bindedFarmer.ForagingLevel * 0.1f);
+                case StardewValley.Tools.Axe:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().AxeHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().AxeThirstDrain;
+                    staminaDrainOnToolUsed = (2 * power) - player.bindedFarmer.ForagingLevel * 0.1f;
+                    break;
+                case StardewValley.Tools.Hoe:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().HoeHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().HoeThirstDrain;
+                    staminaDrainOnToolUsed = (2 * power) - player.bindedFarmer.FarmingLevel * 0.1f;
+                    break;
+                case StardewValley.Tools.Pickaxe:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().PickaxeHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().PickaxeThirstDrain;
+                    staminaDrainOnToolUsed = (2 * power) - player.bindedFarmer.MiningLevel * 0.1f;
+                    break;
+                case StardewValley.Tools.MeleeWeapon:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().MeleeWeaponHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().MeleeWeaponThirstDrain;
+                    staminaDrainOnToolUsed = 1f - player.bindedFarmer.CombatLevel * 0.08f;
+                    break;
+                case StardewValley.Tools.Slingshot:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().SlingshotHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().SlingshotThirstDrain;
+                    staminaDrainOnToolUsed = 1f - player.bindedFarmer.CombatLevel * 0.08f;
+                    break;
+                case StardewValley.Tools.WateringCan:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().WateringCanHungerDrain;
+                    staminaDrainOnToolUsed = (2 * (power + 1)) - player.bindedFarmer.FarmingLevel * 0.1f;
+                    break;
+                case StardewValley.Tools.FishingRod:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().FishingPoleHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().FishingPoleThirstDrain;
+                    staminaDrainOnToolUsed = 8f - player.bindedFarmer.FishingLevel * 0.1f;
+                    break;
+                case StardewValley.Tools.MilkPail:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().MilkPailHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().MilkPailThirstDrain;
+                    staminaDrainOnToolUsed = 4f - player.bindedFarmer.FarmingLevel * 0.1f;
+                    break;
+                case StardewValley.Tools.Shears:
+                    hungerDrainOnToolUsed = ModConfig.GetInstance().ShearHungerDrain;
+                    thirstDrainOnToolUsed = ModConfig.GetInstance().ShearThirstDrain;
+                    staminaDrainOnToolUsed = 4f - player.bindedFarmer.FarmingLevel * 0.1f;
+                    break;
+                default:
+                    LogHelper.Debug("Unknown tool type");
+                    break;
             }
-            else if (toolHold is StardewValley.Tools.Hoe)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().HoeHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().HoeThirstDrain;
-                staminaDrainOnToolUsed = ((2 * power) - player.bindedFarmer.FarmingLevel * 0.1f);
-            }
-            else if (toolHold is StardewValley.Tools.Pickaxe)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().PickaxeHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().PickaxeThirstDrain;
-                staminaDrainOnToolUsed = ((2 * power) - player.bindedFarmer.MiningLevel * 0.1f);
-            }
-            else if (toolHold is StardewValley.Tools.MeleeWeapon)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().MeleeWeaponHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().MeleeWeaponThirstDrain;
-                staminaDrainOnToolUsed = (1f - player.bindedFarmer.CombatLevel * 0.08f);
-            }
-            else if (toolHold is StardewValley.Tools.Slingshot)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().SlingshotHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().SlingshotThirstDrain;
-                staminaDrainOnToolUsed = (1f - player.bindedFarmer.CombatLevel * 0.08f);
-            }
-            else if (toolHold is StardewValley.Tools.WateringCan)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().WateringCanHungerDrain;
-                staminaDrainOnToolUsed = ((2 * (power + 1)) - player.bindedFarmer.FarmingLevel * 0.1f);
-            }
-            else if (toolHold is StardewValley.Tools.FishingRod)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().FishingPoleHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().FishingPoleThirstDrain;
-                staminaDrainOnToolUsed = (8f - player.bindedFarmer.FishingLevel * 0.1f);
-            }
-            else if (toolHold is StardewValley.Tools.MilkPail)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().MilkPailHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().MilkPailThirstDrain;
-                staminaDrainOnToolUsed = (4f - player.bindedFarmer.FarmingLevel * 0.1f);
-            }
-            else if (toolHold is StardewValley.Tools.Shears)
-            {
-                hungerDrainOnToolUsed = ModConfig.GetInstance().ShearHungerDrain;
-                thirstDrainOnToolUsed = ModConfig.GetInstance().ShearThirstDrain;
-                staminaDrainOnToolUsed = (4f - player.bindedFarmer.FarmingLevel * 0.1f); 
-            }
-            else
-                LogHelper.Debug("Unknown tool type");
 
             if (ModConfig.GetInstance().UseOnToolUseDrain)
             {

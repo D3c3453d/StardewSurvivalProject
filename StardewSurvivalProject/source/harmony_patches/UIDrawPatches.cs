@@ -61,7 +61,7 @@ namespace StardewSurvivalProject.source.harmony_patches
                         var itemObj = Game1.objectData[hoveredItem.ItemId];
                         var isDrink = itemObj.IsDrink;
                         //edible and drinkable data
-                        (addThirst, double coolingModifier)  = data.CustomHydrationDictionary.getHydrationAndCoolingModifierValue(hoveredItem.Name, isDrink);
+                        (addThirst, double coolingModifier) = data.CustomHydrationDictionary.getHydrationAndCoolingModifierValue(hoveredItem.Name, isDrink);
                         (addHunger, double hungerCoolingModifier) = data.CustomHungerDictionary.getHungerModifierAndCoolingModifierValue(hoveredItem as SObject, isDrink);
 
                         int edibility = itemObj.Edibility;
@@ -141,13 +141,13 @@ namespace StardewSurvivalProject.source.harmony_patches
                 if (addHunger > 0 && addThirst > 0) { UIHeight += 40; }
                 if (tempAdjustmentDescription != "") { UIHeight += 40; UIWidth = 384; }
 
-                
                 //temporary fit
                 if (heatResistant != 0 || coldResistant != 0) { UIHeight = 64; UIWidth = 296; }
                 if (heatResistant != 0 && coldResistant != 0) { UIHeight += 40; }
 
                 //more temporary fix
-                if (coreTemp > -274) { 
+                if (coreTemp > -274)
+                {
                     UIHeight = 104; UIWidth = 168;
                     //even more temporary fix
                     if (operationalRange != 0) { UIHeight = 104; UIWidth = 260; }
@@ -156,8 +156,6 @@ namespace StardewSurvivalProject.source.harmony_patches
                 Rectangle iconTarget = new Rectangle(70, 0, 10, 10);
                 if (deviceType.Equals("heating")) iconTarget = new Rectangle(50, 0, 10, 10);
                 if (deviceType.Equals("cooling")) iconTarget = new Rectangle(60, 0, 10, 10);
-
-                
 
                 y4 -= UIHeight + 16;
                 if (UIHeight > 0)
@@ -169,14 +167,14 @@ namespace StardewSurvivalProject.source.harmony_patches
                 int startY = y4 + 20;
                 if (addThirst > 0)
                 {
-                    string thirstText = $"+{addThirst.ToString("#.##")} Hydration";
+                    string thirstText = $"+{addThirst:0.00} Hydration";
                     Utility.drawWithShadow(b, ModEntry.InfoIcon, new Vector2(startX, startY), new Rectangle(0, 0, 10, 10), Color.White, 0f, Vector2.Zero, 3f, flipped: false, 0.95f);
                     Utility.drawTextWithShadow(b, thirstText, font, new Vector2(startX + 34, startY), Game1.textColor);
                     startY += 36;
                 }
                 if (addHunger > 0)
                 {
-                    string hungerText = $"+{addHunger.ToString("#.##")} Hunger";
+                    string hungerText = $"+{addHunger:0.00} Hunger";
                     Utility.drawWithShadow(b, ModEntry.InfoIcon, new Vector2(startX, startY), new Rectangle(10, 0, 10, 10), Color.White, 0f, Vector2.Zero, 3f, flipped: false, 0.95f);
                     Utility.drawTextWithShadow(b, hungerText, font, new Vector2(startX + 34, startY), Game1.textColor);
                     startY += 36;
@@ -190,7 +188,7 @@ namespace StardewSurvivalProject.source.harmony_patches
 
                 if (heatResistant != 0)
                 {
-                    string heatText = $"{((heatResistant > 0)? "+" : "")}{heatResistant}% Heat Resist.";
+                    string heatText = $"{((heatResistant > 0) ? "+" : "")}{heatResistant}% Heat Resist.";
                     Utility.drawWithShadow(b, ModEntry.InfoIcon, new Vector2(startX, startY), new Rectangle(20, 0, 10, 10), Color.White, 0f, Vector2.Zero, 3f, flipped: false, 0.95f);
                     Utility.drawTextWithShadow(b, heatText, font, new Vector2(startX + 34, startY), Game1.textColor);
                     startY += 36;
@@ -203,7 +201,7 @@ namespace StardewSurvivalProject.source.harmony_patches
                 }
                 if (coreTemp > -274)
                 {
-                    string coreTempText = String.Format("{0}C {1}", coreTemp, (deviceType.Equals("general")) ? $"({coreTemp - operationalRange}C - {coreTemp + operationalRange}C)" : "");
+                    string coreTempText = string.Format("{0}C {1}", coreTemp, deviceType.Equals("general") ? $"({coreTemp - operationalRange}C - {coreTemp + operationalRange}C)" : "");
                     Utility.drawWithShadow(b, ModEntry.InfoIcon, new Vector2(startX, startY), iconTarget, Color.White, 0f, Vector2.Zero, 3f, flipped: false, 0.95f);
                     Utility.drawTextWithShadow(b, coreTempText, font, new Vector2(startX + 34, startY), Game1.textColor);
                     startY += 36;
@@ -225,6 +223,6 @@ namespace StardewSurvivalProject.source.harmony_patches
         public static data.ClothingTempResistantData getClothingTempResistInfo(string clothesName, string type)
         {
             return data.ClothingTempResistantDictionary.GetClothingData(clothesName, type);
-        } 
+        }
     }
 }

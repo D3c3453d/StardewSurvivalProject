@@ -8,19 +8,19 @@ namespace StardewSurvivalProject.source.data
 {
     public class HealingItemData
     {
-        public String name { get; set; } = "";
+        public string name { get; set; } = "";
         public int value { get; set; } = 0;
     }
 
     public class HealingItemDictionary
     {
         //load a whitelist of item that can be used to heal player (healing value is separated from edibility)
-        public static Dictionary<String, HealingItemData> value_list = new Dictionary<string, HealingItemData>();
+        public static Dictionary<string, HealingItemData> value_list = new Dictionary<string, HealingItemData>();
 
         public static void loadList(Mod context)
         {
-            String RelativePath = Path.Combine(context.Helper.DirectoryPath, "healingItemData.json");
-            String jsonData = File.ReadAllText(RelativePath);
+            string RelativePath = Path.Combine(context.Helper.DirectoryPath, "healingItemData.json");
+            string jsonData = File.ReadAllText(RelativePath);
             HealingItemData[] tempArray = JsonConvert.DeserializeObject<HealingItemData[]>(jsonData);
 
             if (tempArray == null)
@@ -55,6 +55,6 @@ namespace StardewSurvivalProject.source.data
             {
                 return null;
             }
-        } 
+        }
     }
 }

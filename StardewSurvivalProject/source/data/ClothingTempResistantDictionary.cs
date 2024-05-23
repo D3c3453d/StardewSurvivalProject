@@ -22,17 +22,17 @@ namespace StardewSurvivalProject.source.data
 
         public class LoadedClothingData
         {
-            public ClothingTempResistantData[] hat_data ;
-            public ClothingTempResistantData[] shirt_data ;
-            public ClothingTempResistantData[] pants_data ;
-            public ClothingTempResistantData[] boots_data ;
+            public ClothingTempResistantData[] hat_data;
+            public ClothingTempResistantData[] shirt_data;
+            public ClothingTempResistantData[] pants_data;
+            public ClothingTempResistantData[] boots_data;
 
         }
 
         public static void loadList(Mod context)
         {
-            String RelativePath = Path.Combine(context.Helper.DirectoryPath, "clothingTempResistantData.json");
-            String jsonData = File.ReadAllText(RelativePath);
+            string RelativePath = Path.Combine(context.Helper.DirectoryPath, "clothingTempResistantData.json");
+            string jsonData = File.ReadAllText(RelativePath);
 
             data = JsonConvert.DeserializeObject<LoadedClothingData>(jsonData);
 
