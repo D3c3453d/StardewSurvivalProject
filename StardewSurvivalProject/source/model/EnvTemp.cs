@@ -29,9 +29,9 @@ namespace StardewSurvivalProject.source.model
             return (double)pixel / Game1.tileSize;
         }
 
-        private double distance_square(double aX, double aY, double bX, double bY)
+        private double distance(double aX, double aY, double bX, double bY)
         {
-            return Math.Pow(aX - bX, 2) + Math.Pow(aY - bY, 2);
+            return Math.Sqrt((aX - bX) * (aX - bX) + (aY - bY) * (aY - bY));
         }
 
         private bool checkIfItemIsActive(SObject obj, int checkType = 0)
@@ -170,11 +170,11 @@ namespace StardewSurvivalProject.source.model
                                 continue;
 
                             // dealing with target temp this.value here?
-                            double distance_sqr = Math.Max(distance_square(pixelToTile(obj.GetBoundingBox().Center.X), pixelToTile(obj.GetBoundingBox().Center.Y), playerTileX, playerTileY), 1);
-                            LogHelper.Debug($"Distance square from player to {obj.Name} is {distance_sqr}");
-                            if (distance_sqr <= Math.Pow(tempControlObject.effectiveRange, 2))
+                            double dist = Math.Max(distance(pixelToTile(obj.GetBoundingBox().Center.X), pixelToTile(obj.GetBoundingBox().Center.Y), playerTileX, playerTileY), 1);
+                            LogHelper.Debug($"Distance from player to {obj.Name} is {dist}");
+                            if (dist <= tempControlObject.effectiveRange)
                             {
-                                double tempModifierEntry = (tempControlObject.coreTemp - this.value) * Math.Exp(-1 * distance_sqr) * Math.E;
+                                double tempModifierEntry = (tempControlObject.coreTemp - this.value) / (dist * dist * dist);
                                 LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
                                 this.value += tempModifierEntry;
                             }
