@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using StardewSurvivalProject.source.utils;
 using StardewValley;
 using System.Collections.Generic;
@@ -174,7 +174,7 @@ namespace StardewSurvivalProject.source.model
                             LogHelper.Debug($"Distance square from player to {obj.Name} is {distance_sqr}");
                             if (distance_sqr <= Math.Pow(tempControlObject.effectiveRange, 2))
                             {
-                                double tempModifierEntry = (tempControlObject.coreTemp - this.value) / distance_sqr;
+                                double tempModifierEntry = (tempControlObject.coreTemp - this.value) * Math.Exp(-1 * distance_sqr) * Math.E;
                                 LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
                                 this.value += tempModifierEntry;
                             }
