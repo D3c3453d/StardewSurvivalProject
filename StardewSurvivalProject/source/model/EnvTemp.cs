@@ -10,7 +10,6 @@ namespace StardewSurvivalProject.source.model
     {
         public double value { get; set; }
         private bool fixedTemp;
-        private double timeTempModifier;
         private double decTime;
         private double dayNightCycleTempDiffScale;
         private double fluctuationTempScale;
@@ -36,7 +35,6 @@ namespace StardewSurvivalProject.source.model
 
         private bool checkIfItemIsActive(SObject obj, int checkType = 0)
         {
-            LogHelper.Warn($"{obj.Name} X:{pixelToTile(obj.GetBoundingBox().Center.X)} Y:{pixelToTile(obj.GetBoundingBox().Center.Y)}");
             //check if the object is a machine for crafting (eg. Furnace, Charcoal Kiln)
             if (checkType == 1)
             {
@@ -148,7 +146,6 @@ namespace StardewSurvivalProject.source.model
             int proximityCheckBound = (int)Math.Ceiling(data.TempControlObjectDictionary.maxEffectiveRange);
             List<SObject> nearbyObjects = new List<SObject>();
             double oldVal = this.value;
-            LogHelper.Warn($"Player X:{playerTileX} Y:{playerTileY}");
             for (double i = playerTileX - proximityCheckBound; i <= playerTileX + proximityCheckBound; i++)
                 for (double j = playerTileY - proximityCheckBound; j <= playerTileY + proximityCheckBound; j++)
                 {
@@ -171,17 +168,14 @@ namespace StardewSurvivalProject.source.model
 
                             // dealing with target temp this.value here?
                             double dist = Math.Max(distance(pixelToTile(obj.GetBoundingBox().Center.X), pixelToTile(obj.GetBoundingBox().Center.Y), playerTileX, playerTileY), 1);
-                            LogHelper.Debug($"Distance from player to {obj.Name} is {dist}");
                             if (dist <= tempControlObject.effectiveRange)
                             {
                                 double tempModifierEntry = (tempControlObject.coreTemp - this.value) / (15 * (dist - 1) / tempControlObject.effectiveRange + 1);
-                                LogHelper.Debug($"tempModifierEntry {tempModifierEntry}");
                                 this.value += tempModifierEntry;
                             }
                         }
                     }
                 }
-            LogHelper.Debug($"Final temperature modifier is {this.value - oldVal}");
         }
 
         private void applyAmbient(GameLocation location)
@@ -215,7 +209,6 @@ namespace StardewSurvivalProject.source.model
 
                 foreach (data.TempControlObject tempControlObject in tempControlObjects)
                 {
-                    LogHelper.Debug(tempControlObject.name);
                     //calculate indoor heating power base on core temp and range (assume full effectiveness if object is placed indoor)
                     if (tempControlObject.deviceType.Equals("general"))
                     {
@@ -253,8 +246,7 @@ namespace StardewSurvivalProject.source.model
             // day cycle
             this.dayNightCycleTempDiffScale = ModConfig.GetInstance().DefaultDayNightCycleTemperatureDiffScale;
             this.decTime = time / 100 + time % 100 / 60.0;
-            this.timeTempModifier = Math.Sin((this.decTime - 8.5) / (Math.PI * 1.2)) * this.dayNightCycleTempDiffScale;
-            this.value += fixedTemp ? 0 : this.timeTempModifier;
+            this.value += fixedTemp ? 0 : Math.Sin((this.decTime - 8.5) / (Math.PI * 1.2)) * this.dayNightCycleTempDiffScale;
 
             // fluctuation
             this.fluctuationTempScale = ModConfig.GetInstance().DefaultTemperatureFluctuationScale;
