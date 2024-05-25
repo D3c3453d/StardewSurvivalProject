@@ -235,6 +235,7 @@ namespace StardewSurvivalProject.source.model
         public void updateEnvTemp(int playerPixelX, int playerPixelY, int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
             this.fixedTemp = false;
+            this.value = DEFAULT_VALUE;
             if (location != null)
             {
                 applySeason(season);
