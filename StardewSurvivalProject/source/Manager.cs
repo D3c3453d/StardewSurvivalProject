@@ -111,6 +111,7 @@ namespace StardewSurvivalProject.source
             if (ModConfig.GetInstance().UseTemperatureModule)
             {
                 player.updateBodyTemp(envTemp);
+                envTemp.fluctuateEnvTemp();
             }
             if (ModConfig.GetInstance().UseSanityModule)
             {

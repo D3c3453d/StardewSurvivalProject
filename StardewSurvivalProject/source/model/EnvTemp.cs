@@ -227,6 +227,8 @@ namespace StardewSurvivalProject.source.model
 
         public void updateEnvTemp(int playerPixelX, int playerPixelY, int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
         {
+            // main func
+            // OnSecondPassed
             this.fixedTemp = false;
             this.value = DEFAULT_VALUE;
             if (location != null)
@@ -247,8 +249,12 @@ namespace StardewSurvivalProject.source.model
             this.dayNightCycleTempDiffScale = ModConfig.GetInstance().DefaultDayNightCycleTemperatureDiffScale;
             this.decTime = time / 100 + time % 100 / 60.0;
             this.value += fixedTemp ? 0 : Math.Sin((this.decTime - 8.5) / (Math.PI * 1.2)) * this.dayNightCycleTempDiffScale;
+        }
 
+        public void fluctuateEnvTemp()
+        {
             // fluctuation
+            // OnTimeChanged
             this.fluctuationTempScale = ModConfig.GetInstance().DefaultTemperatureFluctuationScale;
             this.value += rand.NextDouble() * this.fluctuationTempScale - 0.5 * this.fluctuationTempScale;
         }
