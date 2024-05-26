@@ -94,14 +94,13 @@ namespace StardewSurvivalProject.source
                     }
                     player.bindedFarmer.stamina = Math.Min(player.bindedFarmer.MaxStamina, player.bindedFarmer.stamina + restoredStaminaPerSecond);
                 }
+
+                if (ModConfig.GetInstance().UseTemperatureModule)
+                    envTemp.updateEnvTemp(player.bindedFarmer.GetBoundingBox().Center.X, player.bindedFarmer.GetBoundingBox().Center.Y, Game1.timeOfDay, Game1.currentSeason, Game1.weatherIcon, Game1.currentLocation, Game1.CurrentMineLevel);
+
             }
         }
 
-        public void onEnvUpdate(int time, string season, int weatherIconId, GameLocation location = null, int currentMineLevel = 0)
-        {
-            if (!ModConfig.GetInstance().UseTemperatureModule) return;
-            envTemp.updateEnvTemp(player.bindedFarmer.GetBoundingBox().Center.X, player.bindedFarmer.GetBoundingBox().Center.Y, time, season, weatherIconId, location, currentMineLevel);
-        }
 
         public void onClockUpdate()
         {

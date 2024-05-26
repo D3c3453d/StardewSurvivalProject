@@ -473,7 +473,6 @@ namespace StardewSurvivalProject
                 return;
             else
             {
-                instance.onEnvUpdate(Game1.timeOfDay, Game1.currentSeason, Game1.weatherIcon, Game1.currentLocation, Game1.CurrentMineLevel);
                 instance.onSecondUpdate();
             }
         }
